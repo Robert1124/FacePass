@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="FacePass developer documentation for setup, permissions, automation conditions, security notes, troubleshooting, and FAQ."
+    >
+    <title>FacePass Documentation</title>
+    <link rel="icon" href="assets/facepass-icon.png">
+    <link rel="apple-touch-icon" href="assets/facepass-icon.png">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+  </head>
+  <body data-page="docs">
+    <header class="site-header" data-reveal>
+      <a class="brand" href="index.html" aria-label="FacePass home">
+        <img src="assets/facepass-icon.png" alt="" width="34" height="34">
+        <span>FacePass</span>
+      </a>
+      <nav class="top-nav" aria-label="Primary">
+        <a href="index.html" data-nav="home" data-en="Home" data-zh="首页">Home</a>
+        <a href="docs.html" data-nav="docs" data-en="Documentation" data-zh="文档">Documentation</a>
+        <a href="roadmap.html" data-nav="roadmap" data-en="Roadmap" data-zh="路线图">Roadmap</a>
+        <a href="https://github.com/Robert1124/FacePass" data-en="GitHub" data-zh="GitHub">GitHub</a>
+      </nav>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-lang-set="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang-set="zh" aria-pressed="false">中</button>
+      </div>
+    </header>
+
+    <main>
+      <h1 class="sr-only" data-en="FacePass Documentation" data-zh="FacePass 文档">FacePass Documentation</h1>
+      <section class="docs-layout docs-page section-light">
+        <aside class="docs-index" data-reveal>
+          <a href="#start" data-en="How to Start" data-zh="如何开始">How to Start</a>
+          <a href="#permissions" data-en="Permissions" data-zh="权限">Permissions</a>
+          <a href="#use" data-en="How to Use" data-zh="如何使用">How to Use</a>
+          <a href="#conditions" data-en="Automation Conditions" data-zh="自动化条件">Automation Conditions</a>
+          <a href="#security" data-en="Security Notes" data-zh="安全说明">Security Notes</a>
+          <a href="#troubleshooting" data-en="Troubleshooting" data-zh="故障排查">Troubleshooting</a>
+          <a href="#faq" data-en="FAQ" data-zh="常见问题">FAQ</a>
+        </aside>
+
+        <div class="docs-content">
+          <article class="doc-panel" id="start" data-reveal>
+            <h2 data-en="How to Start" data-zh="如何开始">How to Start</h2>
+            <div class="doc-steps">
+              <section>
+                <h3 data-en="1. Clone the repository" data-zh="1. 克隆仓库">1. Clone the repository</h3>
+                <p data-en="Clone FacePass from GitHub and enter the project directory." data-zh="从 GitHub 克隆 FacePass，并进入项目目录。">Clone FacePass from GitHub and enter the project directory.</p>
+                <pre><code>git clone https://github.com/Robert1124/FacePass.git
+cd FacePass</code></pre>
+              </section>
+              <section>
+                <h3 data-en="2. Confirm requirements" data-zh="2. 确认环境要求">2. Confirm requirements</h3>
+                <p data-en="Use macOS 13 or later with Xcode command line tools and Swift 5.9 or later available." data-zh="使用 macOS 13 或更高版本，并确保 Xcode 命令行工具和 Swift 5.9 或更高版本可用。">Use macOS 13 or later with Xcode command line tools and Swift 5.9 or later available.</p>
+                <pre><code>xcode-select -p
+swift --version</code></pre>
+              </section>
+              <section>
+                <h3 data-en="3. Build and launch locally" data-zh="3. 本地构建并启动">3. Build and launch locally</h3>
+                <p data-en="Run the setup script to prepare ignored local model artifacts when needed, build a physical app bundle, stage it, and launch FacePass." data-zh="运行设置脚本，在需要时准备被忽略的本地模型工件，构建实体 app bundle，暂存并启动 FacePass。">Run the setup script to prepare ignored local model artifacts when needed, build a physical app bundle, stage it, and launch FacePass.</p>
+                <pre><code>./script/setup_and_run.sh</code></pre>
+              </section>
+              <section>
+                <h3 data-en="4. Use verify-only mode when reviewing" data-zh="4. 审查时使用仅验证模式">4. Use verify-only mode when reviewing</h3>
+                <p data-en="Verify artifact preparation and the app build without launching the app." data-zh="验证工件准备和 app 构建，但不启动应用。">Verify artifact preparation and the app build without launching the app.</p>
+                <pre><code>./script/setup_and_run.sh --verify</code></pre>
+              </section>
+              <section>
+                <h3 data-en="5. Run tests" data-zh="5. 运行测试">5. Run tests</h3>
+                <p data-en="Run the Swift test suite after changes and before trusting sensitive flows." data-zh="修改后以及信任敏感流程前，运行 Swift 测试套件。">Run the Swift test suite after changes and before trusting sensitive flows.</p>
+                <pre><code>swift test</code></pre>
+              </section>
+              <section>
+                <h3 data-en="6. Review model artifact behavior" data-zh="6. 审查模型工件行为">6. Review model artifact behavior</h3>
+                <p data-en="The setup script may download and verify the pinned AuraFace glintr100.onnx artifact, convert through the documented legacy Core ML path, and keep generated artifacts under ignored Artifacts/. These files are not committed." data-zh="设置脚本可能会下载并验证固定的 AuraFace glintr100.onnx 工件，通过已记录的 legacy Core ML 路径转换，并将生成工件保留在被忽略的 Artifacts/ 下。这些文件不会提交。">The setup script may download and verify the pinned AuraFace glintr100.onnx artifact, convert through the documented legacy Core ML path, and keep generated artifacts under ignored Artifacts/. These files are not committed.</p>
+              </section>
+              <section>
+                <h3 data-en="7. Keep the safety boundaries intact" data-zh="7. 保持安全边界">7. Keep the safety boundaries intact</h3>
+                <p data-en="Do not add telemetry, cloud sync, persistent camera behavior, ordinary password-field targeting, or prompt auto-submit behavior. Do not recommend Always Allow for Keychain prompts." data-zh="不要添加遥测、云同步、持久摄像头行为、普通密码框目标，或授权提示自动提交行为。不要建议对钥匙串提示使用“始终允许”。">Do not add telemetry, cloud sync, persistent camera behavior, ordinary password-field targeting, or prompt auto-submit behavior. Do not recommend Always Allow for Keychain prompts.</p>
+              </section>
+            </div>
+          </article>
+
+          <article class="doc-panel" id="permissions" data-reveal>
+            <h2 data-en="Permissions" data-zh="权限">Permissions</h2>
+            <div class="doc-grid">
+              <section>
+                <svg class="permission-icon" viewBox="0 0 28 28" aria-hidden="true">
+                  <path d="M7 8.5h3l1.5-2h5l1.5 2h3a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-7a3 3 0 0 1 3-3Z"></path>
+                  <circle cx="14" cy="15" r="4.2"></circle>
+                </svg>
+                <h3 data-en="Camera" data-zh="摄像头">Camera</h3>
+                <p data-en="Used for short local recognition windows. FacePass should stop capture after success, timeout, cancellation, or failure." data-zh="用于短时本地识别窗口。FacePass 应在成功、超时、取消或失败后停止采集。">Used for short local recognition windows. FacePass should stop capture after success, timeout, cancellation, or failure.</p>
+              </section>
+              <section>
+                <svg class="permission-icon" viewBox="0 0 28 28" aria-hidden="true">
+                  <circle cx="14" cy="7" r="3.2"></circle>
+                  <path d="M5.5 12h17M14 10.5v12M9 22.5l5-8 5 8"></path>
+                </svg>
+                <h3 data-en="Accessibility" data-zh="辅助功能">Accessibility</h3>
+                <p data-en="Used only for approved macOS authorization prompt value fill and the separate locked-session typing path." data-zh="仅用于已批准的 macOS 授权提示值填充，以及单独的锁定会话输入路径。">Used only for approved macOS authorization prompt value fill and the separate locked-session typing path.</p>
+              </section>
+              <section>
+                <svg class="permission-icon" viewBox="0 0 28 28" aria-hidden="true">
+                  <rect x="6" y="12" width="16" height="11" rx="2.5"></rect>
+                  <path d="M9.5 12V9a4.5 4.5 0 0 1 9 0v3M14 16.5v3"></path>
+                </svg>
+                <h3 data-en="Keychain" data-zh="钥匙串">Keychain</h3>
+                <p data-en="Password material is read through the PasswordVault boundary and must not be logged, displayed, or written elsewhere." data-zh="密码材料通过 PasswordVault 边界读取，不得记录、显示或写入其他位置。">Password material is read through the PasswordVault boundary and must not be logged, displayed, or written elsewhere.</p>
+              </section>
+            </div>
+          </article>
+
+          <article class="doc-panel" id="use" data-reveal>
+            <h2 data-en="How to Use" data-zh="如何使用">How to Use</h2>
+            <div class="doc-steps">
+              <section>
+                <h3 data-en="1. Launch FacePass" data-zh="1. 启动 FacePass">1. Launch FacePass</h3>
+                <p data-en="Open the locally built app. FacePass runs as a menu-bar helper with a full settings window for setup and status." data-zh="打开本地构建的应用。FacePass 作为菜单栏辅助工具运行，并提供完整设置窗口用于设置和查看状态。">Open the locally built app. FacePass runs as a menu-bar helper with a full settings window for setup and status.</p>
+              </section>
+              <section>
+                <h3 data-en="2. Grant only required permissions" data-zh="2. 仅授予所需权限">2. Grant only required permissions</h3>
+                <p data-en="Grant Camera for short local recognition windows and Accessibility for approved macOS prompt fill or the locked-session typing path. Sensitive flows should not run without these explicit permissions." data-zh="授予摄像头权限用于短时本地识别窗口，授予辅助功能权限用于已批准的 macOS 提示填充或锁定会话输入路径。没有这些明确权限时，不应运行敏感流程。">Grant Camera for short local recognition windows and Accessibility for approved macOS prompt fill or the locked-session typing path. Sensitive flows should not run without these explicit permissions.</p>
+              </section>
+              <section>
+                <h3 data-en="3. Set up the Keychain password" data-zh="3. 设置钥匙串密码">3. Set up the Keychain password</h3>
+                <p data-en="Use the Password section to store the Mac login password through Keychain. The unlocked-session Verify Keychain Access action only checks access, discards the value immediately, and shows non-sensitive status." data-zh="使用“密码”部分通过钥匙串存储 Mac 登录密码。已解锁会话中的“验证钥匙串访问”动作只检查访问权限，立即丢弃该值，并只显示非敏感状态。">Use the Password section to store the Mac login password through Keychain. The unlocked-session Verify Keychain Access action only checks access, discards the value immediately, and shows non-sensitive status.</p>
+              </section>
+              <section>
+                <h3 data-en="4. Complete recognition setup" data-zh="4. 完成识别设置">4. Complete recognition setup</h3>
+                <p data-en="Use Recognition to enroll and verify local templates. Camera capture should stay short-lived, and raw photos or video frames should not be persisted." data-zh="使用“识别”完成本地模板注册和验证。摄像头采集应保持短时，原始照片或视频帧不应被持久化。">Use Recognition to enroll and verify local templates. Camera capture should stay short-lived, and raw photos or video frames should not be persisted.</p>
+              </section>
+              <section>
+                <h3 data-en="5. Enable the exact assist flow you need" data-zh="5. 启用所需的精确辅助流程">5. Enable the exact assist flow you need</h3>
+                <p data-en="For lock-screen assist, FacePass may type the Keychain password and press Return only after locked-session checks and local recognition pass. For administrator/System Settings prompts, FacePass fills the password value only and never clicks OK, Continue, Modify Settings, Login, submit, or presses Return." data-zh="对于锁屏辅助，FacePass 只有在锁定会话检查和本地识别通过后，才可输入钥匙串密码并按 Return。对于管理员/“系统设置”提示，FacePass 只填入密码值，绝不会点击 OK、Continue、Modify Settings、Login、提交，也不会按 Return。">For lock-screen assist, FacePass may type the Keychain password and press Return only after locked-session checks and local recognition pass. For administrator/System Settings prompts, FacePass fills the password value only and never clicks OK, Continue, Modify Settings, Login, submit, or presses Return.</p>
+              </section>
+              <section>
+                <h3 data-en="6. Enable launch at login in macOS if desired" data-zh="6. 如需开机启动，请在 macOS 中启用">6. Enable launch at login in macOS if desired</h3>
+                <p data-en="Use macOS System Settings, Login Items, and add FacePass to Open at Login. This is a macOS-level startup choice, not a request to weaken Keychain, Accessibility, or privacy protections." data-zh="使用 macOS“系统设置”的“登录项”，将 FacePass 添加到登录时打开。这是 macOS 层面的启动选择，不要求削弱钥匙串、辅助功能或隐私保护。">Use macOS System Settings, Login Items, and add FacePass to Open at Login. This is a macOS-level startup choice, not a request to weaken Keychain, Accessibility, or privacy protections.</p>
+              </section>
+            </div>
+            <p class="callout" data-en="Ordinary webpage and app password fields are not supported FacePass targets." data-zh="普通网页和应用密码框不是 FacePass 支持目标。">Ordinary webpage and app password fields are not supported FacePass targets.</p>
+          </article>
+
+          <article class="doc-panel" id="conditions" data-reveal>
+            <h2 data-en="Automation Conditions" data-zh="自动化条件">Automation Conditions</h2>
+            <p data-en="Conditions apply only to automatic actions, not manual menu or hotkey actions. Missing or inconclusive required signals should fail closed." data-zh="条件只适用于自动动作，不适用于手动菜单或热键动作。缺失或不确定的必需信号应默认拒绝。">Conditions apply only to automatic actions, not manual menu or hotkey actions. Missing or inconclusive required signals should fail closed.</p>
+            <ul class="check-list compact">
+              <li data-en="Wi-Fi connected condition" data-zh="Wi-Fi 已连接条件">Wi-Fi connected condition</li>
+              <li data-en="External monitor condition" data-zh="外接显示器条件">External monitor condition</li>
+              <li data-en="Power-state condition" data-zh="电源状态条件">Power-state condition</li>
+              <li data-en="Any/All match mode" data-zh="任一/全部匹配模式">Any/All match mode</li>
+              <li data-en="Bluetooth is status-only and unavailable for now." data-zh="蓝牙目前仅显示状态且不可用。">Bluetooth is status-only and unavailable for now.</li>
+            </ul>
+          </article>
+
+          <article class="doc-panel" id="security" data-reveal>
+            <h2 data-en="Security Notes" data-zh="安全说明">Security Notes</h2>
+            <p data-en="FacePass is an unlock and password-fill helper, not Apple Face ID, Touch ID, system biometrics, or a replacement for macOS authentication." data-zh="FacePass 是解锁和密码填充辅助工具，不是 Apple Face ID、Touch ID、系统生物识别，也不是 macOS 认证的替代品。">FacePass is an unlock and password-fill helper, not Apple Face ID, Touch ID, system biometrics, or a replacement for macOS authentication.</p>
+            <p data-en="It has no analytics, telemetry, cloud sync, or network service. It does not upload face data, password material, unlock state, Wi-Fi details, display identifiers, or environment values." data-zh="它没有分析、遥测、云同步或网络服务。它不会上传人脸数据、密码材料、解锁状态、Wi-Fi 详情、显示器标识或环境值。">It has no analytics, telemetry, cloud sync, or network service. It does not upload face data, password material, unlock state, Wi-Fi details, display identifiers, or environment values.</p>
+            <p data-en="Raw camera frames, photos, crops, sample buffers, and screenshots are not persisted. Recognition templates are local encrypted data with required metadata." data-zh="原始摄像头帧、照片、裁剪图、样本缓冲区和截图不会被持久化。识别模板是带有必要元数据的本地加密数据。">Raw camera frames, photos, crops, sample buffers, and screenshots are not persisted. Recognition templates are local encrypted data with required metadata.</p>
+          </article>
+
+          <article class="doc-panel" id="troubleshooting" data-reveal>
+            <h2 data-en="Troubleshooting" data-zh="故障排查">Troubleshooting</h2>
+            <details>
+              <summary data-en="Camera permission is missing" data-zh="缺少摄像头权限">Camera permission is missing</summary>
+              <p data-en="Open macOS privacy settings and grant Camera permission to FacePass. Restart the app if macOS does not refresh the permission state immediately." data-zh="打开 macOS 隐私设置并授予 FacePass 摄像头权限。如果 macOS 没有立即刷新权限状态，请重启应用。">Open macOS privacy settings and grant Camera permission to FacePass. Restart the app if macOS does not refresh the permission state immediately.</p>
+            </details>
+            <details>
+              <summary data-en="Accessibility actions do not work" data-zh="辅助功能操作无效">Accessibility actions do not work</summary>
+              <p data-en="Confirm FacePass is enabled in Accessibility privacy settings. FacePass still only targets approved macOS authorization prompts and the lock-screen assist flow." data-zh="确认 FacePass 已在“辅助功能”隐私设置中启用。FacePass 仍只面向已批准的 macOS 授权提示和锁屏辅助流程。">Confirm FacePass is enabled in Accessibility privacy settings. FacePass still only targets approved macOS authorization prompts and the lock-screen assist flow.</p>
+            </details>
+            <details>
+              <summary data-en="Authorization prompt was not filled" data-zh="授权提示未填充">Authorization prompt was not filled</summary>
+              <p data-en="The prompt may be outside the approved allowlist, missing a strong prompt signal, or exposing multiple candidate fields. FacePass should fail closed in these cases." data-zh="该提示可能不在允许列表内、缺少强提示信号，或暴露了多个候选字段。FacePass 在这些情况下应默认拒绝。">The prompt may be outside the approved allowlist, missing a strong prompt signal, or exposing multiple candidate fields. FacePass should fail closed in these cases.</p>
+            </details>
+          </article>
+
+          <article class="doc-panel" id="faq" data-reveal>
+            <h2 data-en="FAQ" data-zh="常见问题">FAQ</h2>
+            <div class="faq-list">
+              <section>
+                <h3 data-en="Is FacePass real Face ID for Mac?" data-zh="FacePass 是 Mac 上真正的 Face ID 吗？">Is FacePass real Face ID for Mac?</h3>
+                <p data-en="No. FacePass is an app-level helper with a local recognition gate. It does not replace macOS authentication." data-zh="不是。FacePass 是带有本地识别门控的应用级辅助工具。它不会替代 macOS 认证。">No. FacePass is an app-level helper with a local recognition gate. It does not replace macOS authentication.</p>
+              </section>
+              <section>
+                <h3 data-en="Can it fill website passwords?" data-zh="它能填充网站密码吗？">Can it fill website passwords?</h3>
+                <p data-en="No. Ordinary webpages and app password fields are intentionally unsupported." data-zh="不能。普通网页和应用密码框被有意排除在支持范围外。">No. Ordinary webpages and app password fields are intentionally unsupported.</p>
+              </section>
+              <section>
+                <h3 data-en="Does it weaken Keychain prompts?" data-zh="它会削弱钥匙串提示吗？">Does it weaken Keychain prompts?</h3>
+                <p data-en="No. FacePass does not recommend Always Allow or weakening macOS Keychain protections." data-zh="不会。FacePass 不会建议“始终允许”或削弱 macOS 钥匙串保护。">No. FacePass does not recommend Always Allow or weakening macOS Keychain protections.</p>
+              </section>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>FacePass</span>
+      <span data-en="Documentation for narrow local unlock assistance." data-zh="窄范围本地解锁辅助文档。">Documentation for narrow local unlock assistance.</span>
+    </footer>
+  </body>
+</html>

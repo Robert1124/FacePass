@@ -18,6 +18,8 @@ DerivedData/
 .vscode/
 .idea/
 AGENTS.md
+DESIGN.md
+superpowers/
 
 # Built app bundles and release artifacts
 dist/

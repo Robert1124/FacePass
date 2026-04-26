@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="FacePass development roadmap for local macOS unlock assistance, liveness work, recognition calibration, permissions, and packaging."
+    >
+    <title>FacePass Roadmap</title>
+    <link rel="icon" href="assets/facepass-icon.png">
+    <link rel="apple-touch-icon" href="assets/facepass-icon.png">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+  </head>
+  <body data-page="roadmap">
+    <header class="site-header" data-reveal>
+      <a class="brand" href="index.html" aria-label="FacePass home">
+        <img src="assets/facepass-icon.png" alt="" width="34" height="34">
+        <span>FacePass</span>
+      </a>
+      <nav class="top-nav" aria-label="Primary">
+        <a href="index.html" data-nav="home" data-en="Home" data-zh="首页">Home</a>
+        <a href="docs.html" data-nav="docs" data-en="Documentation" data-zh="文档">Documentation</a>
+        <a href="roadmap.html" data-nav="roadmap" data-en="Roadmap" data-zh="路线图">Roadmap</a>
+        <a href="https://github.com/Robert1124/FacePass" data-en="GitHub" data-zh="GitHub">GitHub</a>
+      </nav>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-lang-set="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang-set="zh" aria-pressed="false">中</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="roadmap-page section-light">
+        <div class="roadmap-hero" data-reveal>
+          <p class="eyebrow" data-en="Development roadmap" data-zh="开发路线图">Development roadmap</p>
+          <h1 data-en="Roadmap" data-zh="路线图">Roadmap</h1>
+          <p data-en="FacePass remains a local macOS helper for lock-screen assist and approved administrator/System Settings prompt value fill. Planned work stays inside that boundary." data-zh="FacePass 仍是本地 macOS 辅助工具，只用于锁屏辅助和已批准的管理员/“系统设置”提示值填充。后续工作保持在这一边界内。">FacePass remains a local macOS helper for lock-screen assist and approved administrator/System Settings prompt value fill. Planned work stays inside that boundary.</p>
+        </div>
+
+        <div class="timeline" aria-label="FacePass roadmap timeline" data-reveal>
+          <article class="timeline-item is-complete">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Completed" data-zh="已完成">Completed</p>
+            <h2 data-en="Menu-bar app and permissions" data-zh="菜单栏应用与权限">Menu-bar app and permissions</h2>
+            <p data-en="Native macOS menu-bar shell, settings window, Camera, Accessibility, and Keychain permission visibility." data-zh="原生 macOS 菜单栏外壳、设置窗口，以及摄像头、辅助功能和钥匙串权限可见性。">Native macOS menu-bar shell, settings window, Camera, Accessibility, and Keychain permission visibility.</p>
+          </article>
+
+          <article class="timeline-item is-complete">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Completed" data-zh="已完成">Completed</p>
+            <h2 data-en="Keychain and prompt fill boundaries" data-zh="钥匙串与提示填充边界">Keychain and prompt fill boundaries</h2>
+            <p data-en="Keychain-backed password storage and value-only fill for approved administrator/System Settings authorization prompts." data-zh="钥匙串支持的密码存储，以及对已批准管理员/“系统设置”授权提示的仅填充值处理。">Keychain-backed password storage and value-only fill for approved administrator/System Settings authorization prompts.</p>
+          </article>
+
+          <article class="timeline-item is-complete">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Completed" data-zh="已完成">Completed</p>
+            <h2 data-en="Conditions, screen state, and short camera windows" data-zh="条件、屏幕状态与短时摄像头窗口">Conditions, screen state, and short camera windows</h2>
+            <p data-en="Automatic-action conditions, lock-screen orchestration, overlay feedback, and short-lived local camera recognition windows." data-zh="自动动作条件、锁屏编排、覆盖层反馈，以及短时本地摄像头识别窗口。">Automatic-action conditions, lock-screen orchestration, overlay feedback, and short-lived local camera recognition windows.</p>
+          </article>
+
+          <article class="timeline-item is-complete">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Completed" data-zh="已完成">Completed</p>
+            <h2 data-en="Settings, overlay, and recognition prototype" data-zh="设置、覆盖层与识别原型">Settings, overlay, and recognition prototype</h2>
+            <p data-en="Permissions, Password, Automation, Recognition, and About settings are in place with clear menu status, camera panel polish, and local template handling." data-zh="已具备“权限”、“密码”、“自动化”、“识别”和“关于”设置，以及清晰菜单状态、摄像头面板打磨和本地模板处理。">Permissions, Password, Automation, Recognition, and About settings are in place with clear menu status, camera panel polish, and local template handling.</p>
+          </article>
+
+          <article class="timeline-item is-current">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Current next step" data-zh="当前下一步">Current next step</p>
+            <h2 data-en="Liveness and spoof resistance" data-zh="活体与防欺骗">Liveness and spoof resistance</h2>
+            <p data-en="Improve face-recognition safety with liveness checks, photo/video spoof resistance, and clearer failed-recognition UX." data-zh="通过活体检查、照片/视频欺骗防护和更清晰的识别失败体验，提升人脸识别安全性。">Improve face-recognition safety with liveness checks, photo/video spoof resistance, and clearer failed-recognition UX.</p>
+          </article>
+
+          <article class="timeline-item is-future">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Future" data-zh="未来">Future</p>
+            <h2 data-en="Recognition calibration" data-zh="识别校准">Recognition calibration</h2>
+            <p data-en="Build a local validation process for false accept and false reject behavior, then review thresholds before calling recognition production-grade." data-zh="建立本地验证流程，测量误接受和误拒绝行为，并在宣称识别达到生产级之前审查阈值。">Build a local validation process for false accept and false reject behavior, then review thresholds before calling recognition production-grade.</p>
+          </article>
+
+          <article class="timeline-item is-future">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Future" data-zh="未来">Future</p>
+            <h2 data-en="Multi-role permissions" data-zh="多角色权限">Multi-role permissions</h2>
+            <p data-en="Explore clear roles, such as one enrolled face that can only use lock-screen assist and another role for all approved FacePass actions." data-zh="探索清晰角色，例如一个已注册人脸只能使用锁屏辅助，另一个角色可使用所有已批准的 FacePass 动作。">Explore clear roles, such as one enrolled face that can only use lock-screen assist and another role for all approved FacePass actions.</p>
+          </article>
+
+          <article class="timeline-item is-future">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Future" data-zh="未来">Future</p>
+            <h2 data-en="Packaging improvements" data-zh="打包改进">Packaging improvements</h2>
+            <p data-en="Improve reproducible release packaging, Developer ID signing support, notarization support, and clearer binary release instructions when credentials are available." data-zh="在具备凭证时，改进可复现发布打包、Developer ID 签名支持、公证支持和更清晰的二进制发布说明。">Improve reproducible release packaging, Developer ID signing support, notarization support, and clearer binary release instructions when credentials are available.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>FacePass</span>
+      <span data-en="Roadmap for local helper work within explicit safety boundaries." data-zh="在明确安全边界内推进本地辅助工具路线图。">Roadmap for local helper work within explicit safety boundaries.</span>
+    </footer>
+  </body>
+</html>

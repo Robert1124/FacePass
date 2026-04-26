@@ -93,6 +93,7 @@ See [Distribution](docs/distribution.md) for details.
 
 ## Documentation
 
+- [Static Website](website/)
 - [Architecture](docs/architecture.md)
 - [Security Model](docs/security-model.md)
 - [Recognition Model](docs/recognition-model.md)
