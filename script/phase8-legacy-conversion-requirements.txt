@@ -1,0 +1,11 @@
+# Dev-only Phase 8 legacy ONNX/Core ML conversion spike tooling.
+# This file is for an isolated local Artifacts/ venv only.
+# It is not an app runtime dependency and must not be added to Package.swift.
+#
+# coremltools 4.x is the last stable Core ML Tools line documented with the
+# direct ct.converters.onnx path. It depends on NumPy < 1.20, which is not
+# binary-compatible with the Python 3.11/3.12 interpreters observed locally.
+coremltools==4.1
+onnx==1.13.1
+protobuf==3.20.3
+numpy>=1.14.5,<1.20

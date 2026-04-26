@@ -1,0 +1,46 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# SwiftPM / Xcode build products
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcuserstate
+*.dSYM/
+
+# Local Codex/editor workspace state
+.codex/
+.vscode/
+.idea/
+AGENTS.md
+
+# Built app bundles and release artifacts
+dist/
+*.app
+*.dmg
+*.pkg
+*.zip
+
+# Local development notes and historical progress logs
+docs/progress/
+
+# Local model artifacts and conversion environments.
+# These include large downloaded models, generated Core ML artifacts,
+# Python virtualenvs, caches, and conversion logs.
+Artifacts/
+
+# Local secrets/signing material
+.env
+.env.*
+*.p12
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+*.key
+*.pem

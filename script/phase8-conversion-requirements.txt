@@ -1,0 +1,6 @@
+# Dev-only Phase 8 ONNX/Core ML conversion tooling.
+# This file is for the local artifact conversion environment only.
+# It is not an app runtime dependency and must not be added to Package.swift.
+coremltools==9.0
+onnx==1.21.0
+onnxruntime==1.25.0
