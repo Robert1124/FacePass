@@ -6,6 +6,8 @@ FacePass 是一个原生 macOS 菜单栏辅助工具，用于在你自己的 Mac
 
 它的产品想法受 BLEUnlock 启发，但没有使用 BLEUnlock 的代码。FacePass 不使用蓝牙距离判断，而是使用本地摄像头识别 gate。
 
+[官方网站](https://facepass.robertw.me)
+
 [English README](README.md)
 
 ## 它能做什么

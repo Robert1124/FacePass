@@ -6,6 +6,8 @@ FacePass is a native macOS menu-bar helper for people who want a quick local unl
 
 It is inspired by the idea of BLEUnlock, but it does not use BLEUnlock code. FacePass uses a local camera-based recognition gate instead of Bluetooth proximity.
 
+[Official Website](https://facepass.robertw.me)
+
 [中文说明](README.zh-CN.md)
 
 ## What It Does
