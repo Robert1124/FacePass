@@ -37,6 +37,7 @@ The iOS companion also excludes:
 6. `StandByUnlockIntent` requires local device authentication on the iPhone before any signed unlock request is sent.
 7. The iPhone signs a canonical request payload and posts it to the Mac local endpoint.
 8. If the cached endpoint fails, the iPhone performs a short Bonjour rediscovery for the paired Mac, prefers the resolved numeric local address over the Bonjour hostname when available, and retries once.
+9. If Bonjour rediscovery times out, the iPhone probes only a small bounded set of nearby ports on the cached host, validates `/v1/status` against the paired Mac ID and public-key fingerprint, and sends a fresh signed request only after a matching ready endpoint is found.
 
 The current macOS workspace provides the StandBy HTTP router/server, pairing controller, and request verifier for `/v1/status`, `/v1/pair`, and `/v1/standby-unlock`.
 
@@ -132,7 +133,7 @@ Unlock responses from `/v1/standby-unlock` decode as:
 - `Services/StandByUnlockCounterStore.swift`: durable per-Mac counter in app-group UserDefaults with OS file lock / cross-process coordination for app and widget increments.
 - `Services/BonjourRediscoveryService.swift`: short Bonjour rediscovery for the paired Mac.
 - `Services/PairingClient.swift`: `/v1/pair` client.
-- `Services/StandByUnlockClient.swift`: local HTTP request flow with cached endpoint first and Bonjour fallback; fallback retries sign a fresh request with a new request ID and counter so Mac replay protection does not reject a consumed request.
+- `Services/StandByUnlockClient.swift`: local HTTP request flow with cached endpoint first, Bonjour fallback, and bounded nearby-port recovery on the cached host after Bonjour timeout; fallback retries sign a fresh request with a new request ID and counter so Mac replay protection does not reject a consumed request.
 - `Widgets/StandByUnlockActivityAttributes.swift`: ActivityKit attributes for StandBy/Live Activity surfaces.
 - `Widgets/StandByUnlockLiveActivityWidget.swift`: `FacePass Ready` Live Activity card with an `Unlock Mac` button.
 - `Widgets/StandByUnlockWidget.swift`: optional WidgetKit FacePass Unlock widget with FacePass app icon artwork, compact small-widget branding, and an icon-only unlock button using the same AppIntent as the Live Activity.

@@ -84,7 +84,7 @@ final class FacePassCompanionModel: ObservableObject {
             lastUnlockStatus = Self.displayText(for: result)
             reloadPairedMac()
         } catch {
-            lastUnlockStatus = Self.displayText(for: "request_failed")
+            lastUnlockStatus = Self.displayText(forUnlockError: error)
         }
     }
 
@@ -163,6 +163,29 @@ final class FacePassCompanionModel: ObservableObject {
         }
 
         return "The Live Activity card could not be updated."
+    }
+
+    private static func displayText(forUnlockError error: Error) -> String {
+        if let error = error as? BonjourRediscoveryError {
+            switch error {
+            case .notFound:
+                return "Request failed during Bonjour rediscovery: no matching Mac service was found."
+            case .timeout:
+                return "Request failed during Bonjour rediscovery: matching Mac service timed out."
+            case .searchFailed:
+                return "Request failed during Bonjour rediscovery: local network search failed."
+            }
+        }
+
+        if let error = error as? URLError {
+            return "Request failed during local HTTP: \(error.code.rawValue)."
+        }
+
+        if error is DecodingError {
+            return "Request failed because the Mac response could not be read."
+        }
+
+        return "Request failed. Check that the paired Mac is awake and nearby."
     }
 }
 

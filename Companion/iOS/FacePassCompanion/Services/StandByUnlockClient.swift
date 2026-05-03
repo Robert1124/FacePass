@@ -18,6 +18,9 @@ public final class URLSessionStandByUnlockTransport: StandByUnlockTransporting {
 
 public final class StandByUnlockClient {
     private static let endpointRediscoveryTimeout: Duration = .seconds(8)
+    private static let nearbyPortProbeRadius = 12
+    private static let preferredMacPort = 65531
+    private static let endpointProbeTimeout: TimeInterval = 0.75
 
     private let endpointCache: EndpointCaching
     private let rediscoveryService: BonjourRediscovering
@@ -59,13 +62,22 @@ public final class StandByUnlockClient {
                 try saveSuccessfulEndpoint(endpoint, for: pairedMac, when: result)
                 return result
             } catch {
-                let rediscovered = try await rediscoveryService.rediscoverEndpoint(
-                    for: pairedMac,
-                    timeout: Self.endpointRediscoveryTimeout
-                )
-                let result = try await post(try signedRequest(for: pairedMac), to: rediscovered)
-                try saveSuccessfulEndpoint(rediscovered, for: pairedMac, when: result)
-                return result
+                do {
+                    let rediscovered = try await rediscoveryService.rediscoverEndpoint(
+                        for: pairedMac,
+                        timeout: Self.endpointRediscoveryTimeout
+                    )
+                    let result = try await post(try signedRequest(for: pairedMac), to: rediscovered)
+                    try saveSuccessfulEndpoint(rediscovered, for: pairedMac, when: result)
+                    return result
+                } catch {
+                    if let recovered = await recoverEndpointNearCachedEndpoint(endpoint, for: pairedMac) {
+                        let result = try await post(try signedRequest(for: pairedMac), to: recovered)
+                        try saveSuccessfulEndpoint(recovered, for: pairedMac, when: result)
+                        return result
+                    }
+                    throw error
+                }
             }
         }
 
@@ -123,6 +135,70 @@ public final class StandByUnlockClient {
         return try JSONDecoder().decode(StandByUnlockResult.self, from: data)
     }
 
+    private func recoverEndpointNearCachedEndpoint(
+        _ cachedEndpoint: MacEndpoint,
+        for pairedMac: PairedMac
+    ) async -> MacEndpoint? {
+        for endpoint in endpointProbeCandidates(from: cachedEndpoint) {
+            if await statusEndpointMatches(endpoint, pairedMac: pairedMac) {
+                return endpoint
+            }
+        }
+
+        return nil
+    }
+
+    private func endpointProbeCandidates(from endpoint: MacEndpoint) -> [MacEndpoint] {
+        Self.nearbyPortCandidates(around: endpoint.port).map { port in
+            MacEndpoint(host: endpoint.host, port: port, scheme: endpoint.scheme)
+        }
+    }
+
+    private static func nearbyPortCandidates(around port: Int) -> [Int] {
+        var candidates: [Int] = []
+
+        for offset in 1...nearbyPortProbeRadius {
+            candidates.append(port + offset)
+            candidates.append(port - offset)
+        }
+
+        candidates.append(preferredMacPort)
+
+        var seen = Set<Int>()
+        return candidates.filter { candidate in
+            guard candidate > 0, candidate <= 65535, candidate != port else {
+                return false
+            }
+            return seen.insert(candidate).inserted
+        }
+    }
+
+    private func statusEndpointMatches(
+        _ endpoint: MacEndpoint,
+        pairedMac: PairedMac
+    ) async -> Bool {
+        guard let baseURL = endpoint.baseURL else {
+            return false
+        }
+
+        var request = URLRequest(url: baseURL.appending(path: "v1/status"))
+        request.timeoutInterval = Self.endpointProbeTimeout
+
+        do {
+            let (data, response) = try await transport.data(for: request)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+                return false
+            }
+
+            let status = try JSONDecoder().decode(StandByStatusResponse.self, from: data)
+            return status.macDeviceId == pairedMac.macDeviceId &&
+                status.publicKeyFingerprint == pairedMac.publicKeyFingerprint &&
+                status.serverStatus == "ready"
+        } catch {
+            return false
+        }
+    }
+
     private func saveSuccessfulEndpoint(
         _ endpoint: MacEndpoint,
         for pairedMac: PairedMac,
@@ -137,6 +213,12 @@ public final class StandByUnlockClient {
         updated.lastSeenAt = clock()
         try endpointCache.savePairedMac(updated)
     }
+}
+
+private struct StandByStatusResponse: Decodable {
+    let macDeviceId: String
+    let publicKeyFingerprint: String
+    let serverStatus: String
 }
 
 public extension JSONEncoder {

@@ -261,12 +261,38 @@ public final class StandByUnlockHTTPRouter {
     }
 }
 
+enum StandByUnlockHTTPServerPortSelector {
+    static let preferredPortRawValue: UInt16 = 65531
+    static let fallbackRadius = 12
+
+    static func candidatePorts(radius: Int = fallbackRadius) -> [NWEndpoint.Port] {
+        var rawValues = [Int(preferredPortRawValue)]
+
+        if radius > 0 {
+            for offset in 1...radius {
+                rawValues.append(Int(preferredPortRawValue) + offset)
+                rawValues.append(Int(preferredPortRawValue) - offset)
+            }
+        }
+
+        var seen = Set<Int>()
+        return rawValues.compactMap { rawValue in
+            guard rawValue > 0, rawValue <= Int(UInt16.max), seen.insert(rawValue).inserted else {
+                return nil
+            }
+            return NWEndpoint.Port(rawValue: UInt16(rawValue))
+        }
+    }
+}
+
 public final class StandByUnlockHTTPServer {
     private let router: StandByUnlockHTTPRouter
     private let macDeviceId: String
     private let publicKeyFingerprint: String
     private let queue: DispatchQueue
     private var listener: NWListener?
+    private var listenerParameters: NWParameters?
+    private var remainingPortCandidates: [NWEndpoint.Port] = []
     private var currentStatus: StandByUnlockHTTPServerStatus = .stopped
 
     public init(
@@ -300,8 +326,38 @@ public final class StandByUnlockHTTPServer {
         }
 
         let parameters = NWParameters.tcp
-        parameters.allowLocalEndpointReuse = true
-        let listener = try NWListener(using: parameters)
+        parameters.allowLocalEndpointReuse = false
+        listenerParameters = parameters
+        remainingPortCandidates = StandByUnlockHTTPServerPortSelector.candidatePorts()
+        try startNextCandidateListener()
+    }
+
+    private func startNextCandidateListener() throws {
+        guard let parameters = listenerParameters else {
+            return
+        }
+
+        var lastError: Error?
+        while !remainingPortCandidates.isEmpty {
+            let port = remainingPortCandidates.removeFirst()
+            do {
+                let listener = try NWListener(using: parameters, on: port)
+                configure(listener)
+                self.listener = listener
+                setStatus(.starting)
+                listener.start(queue: queue)
+                return
+            } catch {
+                lastError = error
+            }
+        }
+
+        if let lastError {
+            throw lastError
+        }
+    }
+
+    private func configure(_ listener: NWListener) {
         listener.service = NWListener.Service(
             name: nil,
             type: "_facepass._tcp",
@@ -311,21 +367,22 @@ public final class StandByUnlockHTTPServer {
                 "publicKeyFingerprint": publicKeyFingerprint
             ])
         )
-        listener.stateUpdateHandler = { [weak self] state in
-            self?.setStatus(for: state)
+        listener.stateUpdateHandler = { [weak self, weak listener] state in
+            guard let listener else {
+                return
+            }
+            self?.setStatus(for: state, from: listener)
         }
         listener.newConnectionHandler = { [weak self] connection in
             self?.handle(connection)
         }
-
-        self.listener = listener
-        setStatus(.starting)
-        listener.start(queue: queue)
     }
 
     public func stop() {
         listener?.cancel()
         listener = nil
+        listenerParameters = nil
+        remainingPortCandidates = []
         setStatus(.stopped)
     }
 
@@ -375,18 +432,33 @@ public final class StandByUnlockHTTPServer {
         })
     }
 
-    private func setStatus(for state: NWListener.State) {
-        switch state {
-        case .ready:
-            setStatus(.ready)
-        case .failed:
-            setStatus(.failed)
-        case .cancelled:
-            setStatus(.stopped)
-        case .setup, .waiting:
-            setStatus(.starting)
-        @unknown default:
-            setStatus(.failed)
+    private func setStatus(for state: NWListener.State, from listener: NWListener) {
+        queue.async {
+            guard self.listener === listener else {
+                return
+            }
+
+            switch state {
+            case .ready:
+                self.currentStatus = .ready
+            case .failed:
+                listener.cancel()
+                do {
+                    try self.startNextCandidateListener()
+                } catch {
+                    self.currentStatus = .failed
+                }
+
+                if self.listener === listener {
+                    self.currentStatus = .failed
+                }
+            case .cancelled:
+                self.currentStatus = .stopped
+            case .setup, .waiting:
+                self.currentStatus = .starting
+            @unknown default:
+                self.currentStatus = .failed
+            }
         }
     }
 

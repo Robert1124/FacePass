@@ -178,6 +178,52 @@ final class StandByUnlockClientTests: XCTestCase {
         XCTAssertNotNil(cache.savedMacs.last?.lastSeenAt)
     }
 
+    func testRequestUnlockFallsBackToNearbyPortProbeWhenBonjourRediscoveryTimesOut() async throws {
+        let mac = PairedMac(
+            macDeviceId: "mac-facepass-1",
+            displayName: "Office Mac",
+            publicKeyFingerprint: "SHA256:public-key-fingerprint",
+            cachedEndpoint: MacEndpoint(host: "192.168.4.204", port: 49155, scheme: "http"),
+            bonjourServiceName: nil,
+            pairedAt: Date(timeIntervalSince1970: 100),
+            lastSeenAt: nil
+        )
+        let cache = FakeEndpointCache(mac: mac)
+        let transport = RoutingStandByUnlockTransport { request in
+            switch request.url?.absoluteString {
+            case "http://192.168.4.204:49155/v1/standby-unlock":
+                throw URLError(.cannotConnectToHost)
+            case "http://192.168.4.204:49156/v1/status":
+                return #"{"macDeviceId":"mac-facepass-1","protocolVersion":1,"publicKeyFingerprint":"SHA256:public-key-fingerprint","serverStatus":"ready","whetherIPhoneUnlockEnabled":true}"#.data(using: .utf8)!
+            case "http://192.168.4.204:49156/v1/standby-unlock":
+                return #"{"ok":true,"result":"unlock_requested"}"#.data(using: .utf8)!
+            default:
+                throw URLError(.cannotConnectToHost)
+            }
+        }
+        let rediscovery = FakeRediscovery(endpoint: nil, error: BonjourRediscoveryError.timeout)
+        var requestIds = ["standby-request-1", "standby-request-2"][...]
+        let client = StandByUnlockClient(
+            endpointCache: cache,
+            rediscoveryService: rediscovery,
+            keyStore: FakeKeyStore(),
+            counterStore: FakeCounterStore(),
+            clock: { standbyClientDate("2026-04-27T14:04:30Z") },
+            requestIdGenerator: { requestIds.removeFirst() },
+            transport: transport
+        )
+
+        let result = try await client.requestUnlock()
+
+        XCTAssertEqual(result, StandByUnlockResult(ok: true, result: "unlock_requested", errorCode: nil))
+        XCTAssertEqual(transport.requests.map { $0.url?.absoluteString }, [
+            "http://192.168.4.204:49155/v1/standby-unlock",
+            "http://192.168.4.204:49156/v1/status",
+            "http://192.168.4.204:49156/v1/standby-unlock"
+        ])
+        XCTAssertEqual(cache.savedMacs.last?.cachedEndpoint, MacEndpoint(host: "192.168.4.204", port: 49156, scheme: "http"))
+    }
+
     func testBonjourRediscoveryPrefersResolvedIPv4AddressOverLocalHostname() throws {
         let host = BonjourResolvedEndpointHostSelector.resolvedHost(
             hostName: "Yiwens-MacBook-Pro-14.local.",
@@ -187,6 +233,22 @@ final class StandByUnlockClientTests: XCTestCase {
         )
 
         XCTAssertEqual(host, "192.168.4.204")
+    }
+
+    func testBonjourRediscoveryKeepsMultipleCandidatesBeforeHostnameFallback() throws {
+        let hosts = BonjourResolvedEndpointHostSelector.resolvedHosts(
+            hostName: "Yiwens-MacBook-Pro-14.local.",
+            addresses: [
+                ipv4SocketAddressData("192.168.4.215"),
+                ipv4SocketAddressData("192.168.4.204")
+            ]
+        )
+
+        XCTAssertEqual(hosts, [
+            "192.168.4.215",
+            "192.168.4.204",
+            "Yiwens-MacBook-Pro-14.local"
+        ])
     }
 }
 
@@ -228,16 +290,18 @@ private final class FakeEndpointCache: EndpointCaching {
 
 private final class FakeRediscovery: BonjourRediscovering {
     let endpoint: MacEndpoint?
+    let error: BonjourRediscoveryError
     private(set) var requestedTimeouts: [Duration] = []
 
-    init(endpoint: MacEndpoint?) {
+    init(endpoint: MacEndpoint?, error: BonjourRediscoveryError = .notFound) {
         self.endpoint = endpoint
+        self.error = error
     }
 
     func rediscoverEndpoint(for mac: PairedMac, timeout: Duration) async throws -> MacEndpoint {
         requestedTimeouts.append(timeout)
         guard let endpoint else {
-            throw BonjourRediscoveryError.notFound
+            throw error
         }
         return endpoint
     }
@@ -309,6 +373,27 @@ private final class CapturingStandByUnlockTransport: StandByUnlockTransporting {
             headerFields: ["Content-Type": "application/json"]
         )!
         return (self.response, response)
+    }
+}
+
+private final class RoutingStandByUnlockTransport: StandByUnlockTransporting {
+    private let handler: (URLRequest) throws -> Data
+    private(set) var requests: [URLRequest] = []
+
+    init(handler: @escaping (URLRequest) throws -> Data) {
+        self.handler = handler
+    }
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        requests.append(request)
+        let data = try handler(request)
+        let response = HTTPURLResponse(
+            url: request.url!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: ["Content-Type": "application/json"]
+        )!
+        return (data, response)
     }
 }
 

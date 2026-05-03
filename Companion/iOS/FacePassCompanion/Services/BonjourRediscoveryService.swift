@@ -107,11 +107,18 @@ private final class BonjourEndpointLookup: NSObject, NetServiceBrowserDelegate, 
             return
         }
 
-        guard let host = resolvedHost(from: sender), sender.port > 0 else {
+        guard sender.port > 0 else {
             return
         }
 
-        finish(.success(MacEndpoint(host: host, port: sender.port, scheme: "http")))
+        let endpoints = resolvedEndpoints(from: sender)
+        guard !endpoints.isEmpty else {
+            return
+        }
+
+        Task { [weak self] in
+            await self?.finishWithFirstReachableEndpoint(from: endpoints)
+        }
     }
 
     func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
@@ -137,11 +144,45 @@ private final class BonjourEndpointLookup: NSObject, NetServiceBrowserDelegate, 
         return String(data: data, encoding: .utf8)
     }
 
-    private func resolvedHost(from service: NetService) -> String? {
-        BonjourResolvedEndpointHostSelector.resolvedHost(
+    private func resolvedEndpoints(from service: NetService) -> [MacEndpoint] {
+        BonjourResolvedEndpointHostSelector.resolvedHosts(
             hostName: service.hostName,
             addresses: service.addresses ?? []
-        )
+        ).map { host in
+            MacEndpoint(host: host, port: service.port, scheme: "http")
+        }
+    }
+
+    private func finishWithFirstReachableEndpoint(from endpoints: [MacEndpoint]) async {
+        for endpoint in endpoints {
+            guard !hasFinished else {
+                return
+            }
+
+            if await statusEndpointMatchesPairedMac(endpoint) {
+                finish(.success(endpoint))
+                return
+            }
+        }
+    }
+
+    private func statusEndpointMatchesPairedMac(_ endpoint: MacEndpoint) async -> Bool {
+        guard let baseURL = endpoint.baseURL else {
+            return false
+        }
+
+        var request = URLRequest(url: baseURL.appending(path: "v1/status"))
+        request.timeoutInterval = 1.5
+
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let status = try JSONDecoder().decode(StandByStatusResponse.self, from: data)
+            return status.macDeviceId == macDeviceId &&
+                status.publicKeyFingerprint == publicKeyFingerprint &&
+                status.serverStatus == "ready"
+        } catch {
+            return false
+        }
     }
 
     private func finish(_ result: Result<MacEndpoint, Error>) {
@@ -166,21 +207,30 @@ private final class BonjourEndpointLookup: NSObject, NetServiceBrowserDelegate, 
 
 enum BonjourResolvedEndpointHostSelector {
     static func resolvedHost(hostName: String?, addresses: [Data]) -> String? {
+        resolvedHosts(hostName: hostName, addresses: addresses).first
+    }
+
+    static func resolvedHosts(hostName: String?, addresses: [Data]) -> [String] {
         let numericHosts = addresses.compactMap(numericHost)
+        var hosts: [String] = []
 
-        if let host = numericHosts.first(where: isIPv4Host) {
-            return host
+        hosts.append(contentsOf: numericHosts.filter(isIPv4Host))
+        hosts.append(contentsOf: numericHosts.filter { !isIPv4Host($0) && !isLinkLocalIPv6Host($0) })
+
+        if let normalizedHostName = normalizedHostName(hostName) {
+            hosts.append(normalizedHostName)
         }
 
-        if let host = numericHosts.first(where: { !isLinkLocalIPv6Host($0) }) {
-            return host
+        hosts.append(contentsOf: numericHosts.filter(isLinkLocalIPv6Host))
+        return deduplicate(hosts)
+    }
+
+    private static func normalizedHostName(_ hostName: String?) -> String? {
+        guard let hostName, !hostName.isEmpty else {
+            return nil
         }
 
-        if let hostName, !hostName.isEmpty {
-            return hostName.hasSuffix(".") ? String(hostName.dropLast()) : hostName
-        }
-
-        return numericHosts.first
+        return hostName.hasSuffix(".") ? String(hostName.dropLast()) : hostName
     }
 
     private static func numericHost(from address: Data) -> String? {
@@ -226,4 +276,19 @@ enum BonjourResolvedEndpointHostSelector {
     private static func isLinkLocalIPv6Host(_ host: String) -> Bool {
         host.lowercased().hasPrefix("fe80:")
     }
+
+    private static func deduplicate(_ hosts: [String]) -> [String] {
+        var seen = Set<String>()
+        var result: [String] = []
+        for host in hosts where seen.insert(host).inserted {
+            result.append(host)
+        }
+        return result
+    }
+}
+
+private struct StandByStatusResponse: Decodable {
+    let macDeviceId: String
+    let publicKeyFingerprint: String
+    let serverStatus: String
 }

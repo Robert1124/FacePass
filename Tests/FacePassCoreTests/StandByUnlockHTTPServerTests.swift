@@ -225,6 +225,13 @@ final class StandByUnlockHTTPServerTests: XCTestCase {
         XCTAssertEqual(host, "192.168.4.204")
     }
 
+    func testStandByHTTPServerPortCandidatesPreferFixedPortBeforeNearbyFallbacks() {
+        XCTAssertEqual(
+            StandByUnlockHTTPServerPortSelector.candidatePorts(radius: 4).map(\.rawValue),
+            [65531, 65532, 65530, 65533, 65529, 65534, 65528, 65535, 65527]
+        )
+    }
+
     private func makePairingController(
         pairedDeviceStore: InMemoryStandByHTTPPairedDeviceStore = InMemoryStandByHTTPPairedDeviceStore()
     ) -> StandByUnlockPairingController {

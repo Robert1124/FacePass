@@ -71,7 +71,7 @@ It never clicks `Unlock`, submits, or presses Return for approved unlocked promp
 
 ### StandBy Local Protocol
 
-StandBy Unlock uses local HTTP with QR-provided direct endpoint pairing when available and Bonjour rediscovery fallback:
+StandBy Unlock uses local HTTP. The Mac server prefers fixed port `65531` and falls back only to a bounded nearby-port range if that port is unavailable. The iPhone uses QR-provided direct endpoint pairing when available, Bonjour rediscovery fallback, and bounded nearby-port recovery on the cached host after Bonjour timeout:
 
 - `GET /v1/status`: reports Mac device ID, protocol version, server status, public-key fingerprint, and whether iPhone unlock is enabled.
 - `POST /v1/pair`: accepts a one-time pairing registration and stores the paired iPhone public key plus the registration `displayName` in the separate Keychain-backed paired-device trust store. Settings displays that stored `displayName` as the paired iPhone name.
