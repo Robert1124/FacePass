@@ -116,7 +116,12 @@ jobs:
         run: |
           set -euo pipefail
           APP="dist/FacePass.app"
-          codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$APP/Contents/Frameworks/Sparkle.framework"
+          SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
+          codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE/Versions/B/XPCServices/Installer.xpc"
+          codesign --force --timestamp --options runtime --preserve-metadata=entitlements --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE/Versions/B/XPCServices/Downloader.xpc"
+          codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE/Versions/B/Autoupdate"
+          codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE/Versions/B/Updater.app"
+          codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE"
           codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$APP"
           codesign --verify --strict --deep "$APP"
 
@@ -125,14 +130,32 @@ jobs:
         run: |
           set -euo pipefail
           APP_NOTARY_ZIP="$RUNNER_TEMP/FacePass-${RELEASE_VERSION#v}-app-notary.zip"
+          APP_NOTARY_OUTPUT="$RUNNER_TEMP/app-notary-submit.json"
           rm -f "$APP_NOTARY_ZIP"
           /usr/bin/ditto -c -k --keepParent --sequesterRsrc --zlibCompressionLevel 9 "dist/FacePass.app" "$APP_NOTARY_ZIP"
+          set +e
           xcrun notarytool submit "$APP_NOTARY_ZIP" \
             --key "$RUNNER_TEMP/notary/AuthKey_${NOTARY_KEY_ID}.p8" \
             --key-id "$NOTARY_KEY_ID" \
             --issuer "$NOTARY_ISSUER_ID" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait
+            --wait \
+            --output-format json | tee "$APP_NOTARY_OUTPUT"
+          submit_status="${PIPESTATUS[0]}"
+          set -e
+          submission_id="$(ruby -rjson -e 'data = JSON.parse(File.read(ARGV[0])); print(data["id"].to_s)' "$APP_NOTARY_OUTPUT")"
+          notary_status="$(ruby -rjson -e 'data = JSON.parse(File.read(ARGV[0])); print(data["status"].to_s)' "$APP_NOTARY_OUTPUT")"
+          if [[ "$submit_status" != "0" || "$notary_status" != "Accepted" ]]; then
+            echo "App notarization failed with status: ${notary_status:-unknown}" >&2
+            if [[ -n "$submission_id" ]]; then
+              xcrun notarytool log "$submission_id" \
+                --key "$RUNNER_TEMP/notary/AuthKey_${NOTARY_KEY_ID}.p8" \
+                --key-id "$NOTARY_KEY_ID" \
+                --issuer "$NOTARY_ISSUER_ID" \
+                --team-id "$APPLE_TEAM_ID" || true
+            fi
+            exit 1
+          fi
 
       - name: Staple notarized app
         shell: bash
@@ -164,12 +187,30 @@ jobs:
         run: |
           set -euo pipefail
           PACKAGE="dist/release/FacePass-${RELEASE_VERSION#v}.dmg"
+          DMG_NOTARY_OUTPUT="$RUNNER_TEMP/dmg-notary-submit.json"
+          set +e
           xcrun notarytool submit "$PACKAGE" \
             --key "$RUNNER_TEMP/notary/AuthKey_${NOTARY_KEY_ID}.p8" \
             --key-id "$NOTARY_KEY_ID" \
             --issuer "$NOTARY_ISSUER_ID" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait
+            --wait \
+            --output-format json | tee "$DMG_NOTARY_OUTPUT"
+          submit_status="${PIPESTATUS[0]}"
+          set -e
+          submission_id="$(ruby -rjson -e 'data = JSON.parse(File.read(ARGV[0])); print(data["id"].to_s)' "$DMG_NOTARY_OUTPUT")"
+          notary_status="$(ruby -rjson -e 'data = JSON.parse(File.read(ARGV[0])); print(data["status"].to_s)' "$DMG_NOTARY_OUTPUT")"
+          if [[ "$submit_status" != "0" || "$notary_status" != "Accepted" ]]; then
+            echo "DMG notarization failed with status: ${notary_status:-unknown}" >&2
+            if [[ -n "$submission_id" ]]; then
+              xcrun notarytool log "$submission_id" \
+                --key "$RUNNER_TEMP/notary/AuthKey_${NOTARY_KEY_ID}.p8" \
+                --key-id "$NOTARY_KEY_ID" \
+                --issuer "$NOTARY_ISSUER_ID" \
+                --team-id "$APPLE_TEAM_ID" || true
+            fi
+            exit 1
+          fi
 
       - name: Staple notarized DMG and refresh checksum
         shell: bash
