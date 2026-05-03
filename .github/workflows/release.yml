@@ -17,7 +17,7 @@ permissions:
 jobs:
   macos-release:
     name: Build, sign, notarize, and publish macOS release
-    runs-on: macos-13
+    runs-on: macos-15-intel
     env:
       RELEASE_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}
       FACEPASS_SPARKLE_PUBLIC_ED_KEY: ${{ secrets.FACEPASS_SPARKLE_PUBLIC_ED_KEY }}
