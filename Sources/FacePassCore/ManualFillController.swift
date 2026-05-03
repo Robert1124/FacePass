@@ -74,6 +74,7 @@ public enum ManualFillResult: Equatable, CustomStringConvertible {
     case multipleApprovedPasswordFields
     case passwordReadFailed
     case recognitionRejected
+    case localRecognitionDisabled
 
     public var description: String {
         switch self {
@@ -84,7 +85,7 @@ public enum ManualFillResult: Equatable, CustomStringConvertible {
         case .accessibilityPermissionDenied:
             "Accessibility permission is required before filling."
         case .noFocusedPasswordField:
-            "No approved macOS administrator/System Settings authorization password prompt was found."
+            "No approved macOS administrator/System Settings authorization prompt or Apple Passwords unlock prompt was found."
         case .focusedPasswordFieldUnavailable:
             "The approved authorization password field is unavailable."
         case .multipleApprovedPasswordFields:
@@ -93,6 +94,8 @@ public enum ManualFillResult: Equatable, CustomStringConvertible {
             "Unable to read password."
         case .recognitionRejected:
             "Local FacePass recognition did not approve authorization fill."
+        case .localRecognitionDisabled:
+            "Local FacePass recognition is disabled by the selected unlock provider mode."
         }
     }
 

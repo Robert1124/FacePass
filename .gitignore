@@ -6,17 +6,27 @@ Icon?
 
 # SwiftPM / Xcode build products
 .build/
+build/
 .swiftpm/
 DerivedData/
+*.xcarchive/
+*.xcresult/
+*.ipa
 *.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
+**/*.xcodeproj/project.xcworkspace/xcuserdata/
+**/*.xcodeproj/xcuserdata/
+**/*.xcworkspace/xcuserdata/
 *.xcuserstate
 *.dSYM/
+*.dSYM.zip
 
 # Local Codex/editor workspace state
 .codex/
 .vscode/
 .idea/
+.playwright-mcp
 AGENTS.md
 DESIGN.md
 superpowers/

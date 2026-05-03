@@ -97,7 +97,7 @@ private struct SetupWizardView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("FacePass Setup")
                 .font(.title2.weight(.semibold))
-            Text("Configure permissions and Keychain password storage for approved macOS administrator/System Settings authorization prompts.")
+            Text("Configure permissions and Keychain password storage for approved macOS administrator/System Settings authorization prompts and Apple Passwords unlock prompts.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -144,7 +144,7 @@ private struct SetupWizardView: View {
             permissionStep(
                 title: "Accessibility Permission",
                 status: accessibilityStatus,
-                detail: "Required for checking approved administrator/System Settings authorization password prompts and setting the saved value only.",
+                detail: "Required for checking approved administrator/System Settings authorization prompts and Apple Passwords unlock prompts, then setting the saved value only.",
                 primaryTitle: "Request Prompt",
                 primaryAction: {
                     AccessibilityPermissionPrompter.requestPrompt()
@@ -158,7 +158,7 @@ private struct SetupWizardView: View {
             permissionStep(
                 title: "Camera Permission",
                 status: cameraStatus,
-                detail: "Used only for short local FacePass recognition, enrollment, approved admin/System Settings prompt fill, and opt-in lock-screen checks. FacePass is not Apple Face ID, system biometrics, or a macOS authentication replacement, does not keep the camera running, and does not save raw frames or photos.",
+                detail: "Used only for short local FacePass recognition, enrollment, approved unlocked prompt fill, and opt-in lock-screen checks. FacePass is not Apple Face ID, system biometrics, or a macOS authentication replacement, does not keep the camera running, and does not save raw frames or photos.",
                 primaryTitle: isRequestingCameraPermission ? "Requesting..." : "Request Camera",
                 primaryAction: requestCameraPermission,
                 secondaryTitle: "Open Settings",
@@ -242,7 +242,7 @@ private struct SetupWizardView: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("Unlocked admin/System Settings prompt fill runs local FacePass recognition first, fills the saved value only, and does not click OK/Continue/Login, submit, or press Return.")
+            Text("Unlocked approved prompt fill runs local FacePass recognition first, fills the saved value only, and does not click Unlock/OK/Continue/Login, submit, or press Return.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

@@ -121,6 +121,14 @@ final class StatusItemController: NSObject {
         settingsItem.target = self
         menu.addItem(settingsItem)
 
+        let updatesItem = NSMenuItem(
+            title: "Check for Updates...",
+            action: #selector(checkForUpdatesFromMenu(_:)),
+            keyEquivalent: ""
+        )
+        updatesItem.target = self
+        menu.addItem(updatesItem)
+
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(
@@ -141,6 +149,10 @@ final class StatusItemController: NSObject {
 
     @objc private func openSettingsFromMenu(_ sender: NSMenuItem) {
         openSettings()
+    }
+
+    @objc private func checkForUpdatesFromMenu(_ sender: NSMenuItem) {
+        NSApp.sendAction(Selector(("checkForUpdates:")), to: nil, from: sender)
     }
 
     @objc private func quitFromMenu(_ sender: NSMenuItem) {

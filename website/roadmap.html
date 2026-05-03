@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="FacePass development roadmap for local macOS unlock assistance, liveness work, recognition calibration, permissions, and packaging."
+      content="FacePass development roadmap for local macOS unlock assistance, iPhone companion launch, liveness and anti-spoofing, and multi-role permissions."
     >
     <title>FacePass Roadmap</title>
     <link rel="icon" href="assets/facepass-icon.png">
@@ -36,7 +36,7 @@
         <div class="roadmap-hero" data-reveal>
           <p class="eyebrow" data-en="Development roadmap" data-zh="开发路线图">Development roadmap</p>
           <h1 data-en="Roadmap" data-zh="路线图">Roadmap</h1>
-          <p data-en="FacePass remains a local macOS helper for lock-screen assist and approved administrator/System Settings prompt value fill. Planned work stays inside that boundary." data-zh="FacePass 仍是本地 macOS 辅助工具，只用于锁屏辅助和已批准的管理员/“系统设置”提示值填充。后续工作保持在这一边界内。">FacePass remains a local macOS helper for lock-screen assist and approved administrator/System Settings prompt value fill. Planned work stays inside that boundary.</p>
+          <p data-en="FacePass remains a local macOS helper for lock-screen assist, independent iPhone StandBy approval, and approved administrator/System Settings prompt value fill. Planned work stays inside that boundary." data-zh="FacePass 仍是本地 macOS 辅助工具，只用于锁屏辅助、独立 iPhone StandBy 批准，以及已批准的管理员/“系统设置”提示值填充。后续工作保持在这一边界内。">FacePass remains a local macOS helper for lock-screen assist, independent iPhone StandBy approval, and approved administrator/System Settings prompt value fill. Planned work stays inside that boundary.</p>
         </div>
 
         <div class="timeline" aria-label="FacePass roadmap timeline" data-reveal>
@@ -65,21 +65,28 @@
             <span class="timeline-marker" aria-hidden="true"></span>
             <p class="eyebrow" data-en="Completed" data-zh="已完成">Completed</p>
             <h2 data-en="Settings, overlay, and recognition prototype" data-zh="设置、覆盖层与识别原型">Settings, overlay, and recognition prototype</h2>
-            <p data-en="Permissions, Password, Automation, Recognition, and About settings are in place with clear menu status, camera panel polish, and local template handling." data-zh="已具备“权限”、“密码”、“自动化”、“识别”和“关于”设置，以及清晰菜单状态、摄像头面板打磨和本地模板处理。">Permissions, Password, Automation, Recognition, and About settings are in place with clear menu status, camera panel polish, and local template handling.</p>
+            <p data-en="Permissions, Password, Automation, Unlock Mode, StandBy Unlock, Recognition, and About settings are in place with clear menu status, camera panel polish, provider routing, and local encrypted template handling." data-zh="已具备“权限”、“密码”、“自动化”、“解锁模式”、“StandBy Unlock”、“识别”和“关于”设置，以及清晰菜单状态、摄像头面板打磨、提供方路由和本地加密模板处理。">Permissions, Password, Automation, Unlock Mode, StandBy Unlock, Recognition, and About settings are in place with clear menu status, camera panel polish, provider routing, and local encrypted template handling.</p>
+          </article>
+
+          <article class="timeline-item is-complete">
+            <span class="timeline-marker" aria-hidden="true"></span>
+            <p class="eyebrow" data-en="Completed" data-zh="已完成">Completed</p>
+            <h2 data-en="iPhone StandBy approval path" data-zh="iPhone StandBy 批准路径">iPhone StandBy approval path</h2>
+            <p data-en="Paired-iPhone signed requests, local HTTP and Bonjour pairing/rediscovery, WidgetKit Live Activity and Dynamic Island surfaces, and optional static widget boundaries are documented without Mac password transfer." data-zh="已记录已配对 iPhone 签名请求、本地 HTTP 与 Bonjour 配对/重新发现、WidgetKit Live Activity 和 Dynamic Island 界面，以及可选静态小组件边界，并且不会传输 Mac 密码。">Paired-iPhone signed requests, local HTTP and Bonjour pairing/rediscovery, WidgetKit Live Activity and Dynamic Island surfaces, and optional static widget boundaries are documented without Mac password transfer.</p>
           </article>
 
           <article class="timeline-item is-current">
             <span class="timeline-marker" aria-hidden="true"></span>
             <p class="eyebrow" data-en="Current next step" data-zh="当前下一步">Current next step</p>
-            <h2 data-en="Liveness and spoof resistance" data-zh="活体与防欺骗">Liveness and spoof resistance</h2>
-            <p data-en="Improve face-recognition safety with liveness checks, photo/video spoof resistance, and clearer failed-recognition UX." data-zh="通过活体检查、照片/视频欺骗防护和更清晰的识别失败体验，提升人脸识别安全性。">Improve face-recognition safety with liveness checks, photo/video spoof resistance, and clearer failed-recognition UX.</p>
+            <h2 data-en="Package and launch the iOS companion" data-zh="打包并上线 iOS 伴侣">Package and launch the iOS companion</h2>
+            <p data-en="Finish iOS companion release packaging, App Store/TestFlight metadata, privacy answers, screenshots, and submission checks while keeping the Mac app on the Developer ID, notarized website distribution, Sparkle appcast, GitHub Releases package, and tag-triggered Actions release path." data-zh="完成 iOS 伴侣的发布打包、App Store/TestFlight 元数据、隐私表单、截图和提交检查，同时保持 Mac 应用走 Developer ID 签名、公证官网分发、Sparkle appcast、GitHub Releases package 和 tag-triggered Actions release 路径。">Finish iOS companion release packaging, App Store/TestFlight metadata, privacy answers, screenshots, and submission checks while keeping the Mac app on the Developer ID, notarized website distribution, Sparkle appcast, GitHub Releases package, and tag-triggered Actions release path.</p>
           </article>
 
           <article class="timeline-item is-future">
             <span class="timeline-marker" aria-hidden="true"></span>
             <p class="eyebrow" data-en="Future" data-zh="未来">Future</p>
-            <h2 data-en="Recognition calibration" data-zh="识别校准">Recognition calibration</h2>
-            <p data-en="Build a local validation process for false accept and false reject behavior, then review thresholds before calling recognition production-grade." data-zh="建立本地验证流程，测量误接受和误拒绝行为，并在宣称识别达到生产级之前审查阈值。">Build a local validation process for false accept and false reject behavior, then review thresholds before calling recognition production-grade.</p>
+            <h2 data-en="Liveness and anti-spoofing" data-zh="活体与防欺骗">Liveness and anti-spoofing</h2>
+            <p data-en="Improve local recognition safety with liveness checks, photo/video spoof resistance, and clearer failed-recognition UX without claiming Apple Face ID or system biometric authentication." data-zh="通过活体检查、照片/视频欺骗防护和更清晰的识别失败体验，提升本地识别安全性，同时不宣称 Apple Face ID 或系统生物识别认证。">Improve local recognition safety with liveness checks, photo/video spoof resistance, and clearer failed-recognition UX without claiming Apple Face ID or system biometric authentication.</p>
           </article>
 
           <article class="timeline-item is-future">
@@ -89,12 +96,6 @@
             <p data-en="Explore clear roles, such as one enrolled face that can only use lock-screen assist and another role for all approved FacePass actions." data-zh="探索清晰角色，例如一个已注册人脸只能使用锁屏辅助，另一个角色可使用所有已批准的 FacePass 动作。">Explore clear roles, such as one enrolled face that can only use lock-screen assist and another role for all approved FacePass actions.</p>
           </article>
 
-          <article class="timeline-item is-future">
-            <span class="timeline-marker" aria-hidden="true"></span>
-            <p class="eyebrow" data-en="Future" data-zh="未来">Future</p>
-            <h2 data-en="Packaging improvements" data-zh="打包改进">Packaging improvements</h2>
-            <p data-en="Improve reproducible release packaging, Developer ID signing support, notarization support, and clearer binary release instructions when credentials are available." data-zh="在具备凭证时，改进可复现发布打包、Developer ID 签名支持、公证支持和更清晰的二进制发布说明。">Improve reproducible release packaging, Developer ID signing support, notarization support, and clearer binary release instructions when credentials are available.</p>
-          </article>
         </div>
       </section>
     </main>

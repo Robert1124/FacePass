@@ -1,0 +1,897 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		010000000000000000000001 /* StandByUnlockModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000101 /* StandByUnlockModels.swift */; };
+		010000000000000000000002 /* CanonicalPayloadSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000102 /* CanonicalPayloadSigner.swift */; };
+		010000000000000000000003 /* CompanionKeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000103 /* CompanionKeyStore.swift */; };
+		010000000000000000000004 /* EndpointCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000104 /* EndpointCache.swift */; };
+		010000000000000000000005 /* BonjourRediscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000105 /* BonjourRediscoveryService.swift */; };
+		010000000000000000000006 /* StandByUnlockClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000106 /* StandByUnlockClient.swift */; };
+		010000000000000000000007 /* PairingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000107 /* PairingClient.swift */; };
+		010000000000000000000008 /* StandByUnlockCounterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000108 /* StandByUnlockCounterStore.swift */; };
+		010000000000000000000009 /* FacePassCompanionConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000109 /* FacePassCompanionConfiguration.swift */; };
+		010000000000000000000010 /* StandByUnlockActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000110 /* StandByUnlockActivityAttributes.swift */; };
+		010000000000000000000021 /* FacePassCompanionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000121 /* FacePassCompanionApp.swift */; };
+		010000000000000000000022 /* FacePassCompanionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000122 /* FacePassCompanionModel.swift */; };
+		010000000000000000000023 /* PairingScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000123 /* PairingScanView.swift */; };
+		010000000000000000000024 /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000124 /* QRCodeScannerView.swift */; };
+		010000000000000000000025 /* PairingPayloadDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000125 /* PairingPayloadDecoder.swift */; };
+		010000000000000000000026 /* PairedStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000126 /* PairedStatusView.swift */; };
+		010000000000000000000027 /* StandByLiveActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000127 /* StandByLiveActivityController.swift */; };
+		010000000000000000000028 /* StandByUnlockIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000128 /* StandByUnlockIntent.swift */; };
+		010000000000000000000029 /* StandByIntentDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000129 /* StandByIntentDependencies.swift */; };
+		010000000000000000000030 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000130 /* Assets.xcassets */; };
+		010000000000000000000035 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000133 /* PrivacyInfo.xcprivacy */; };
+		010000000000000000000031 /* FacePassCompanionCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010000000000000000000202 /* FacePassCompanionCore.framework */; };
+		010000000000000000000032 /* FacePassCompanionCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 010000000000000000000202 /* FacePassCompanionCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		010000000000000000000033 /* FacePassCompanionWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 010000000000000000000203 /* FacePassCompanionWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		010000000000000000000034 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000130 /* Assets.xcassets */; };
+		010000000000000000000048 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000146 /* PrivacyInfo.xcprivacy */; };
+		010000000000000000000041 /* FacePassCompanionWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000141 /* FacePassCompanionWidgetBundle.swift */; };
+		010000000000000000000042 /* StandByUnlockLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000142 /* StandByUnlockLiveActivityWidget.swift */; };
+		010000000000000000000043 /* StandByUnlockIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000128 /* StandByUnlockIntent.swift */; };
+		010000000000000000000044 /* StandByIntentDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000129 /* StandByIntentDependencies.swift */; };
+		010000000000000000000045 /* FacePassCompanionCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010000000000000000000202 /* FacePassCompanionCore.framework */; };
+		010000000000000000000046 /* FacePassCompanionCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 010000000000000000000202 /* FacePassCompanionCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		010000000000000000000047 /* StandByUnlockWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000145 /* StandByUnlockWidget.swift */; };
+		010000000000000000000061 /* CanonicalPayloadSignerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000161 /* CanonicalPayloadSignerTests.swift */; };
+		010000000000000000000062 /* EndpointCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000162 /* EndpointCacheTests.swift */; };
+		010000000000000000000063 /* StandByUnlockClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010000000000000000000163 /* StandByUnlockClientTests.swift */; };
+		010000000000000000000064 /* FacePassCompanionCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010000000000000000000202 /* FacePassCompanionCore.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		010000000000000000000301 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 010000000000000000000400 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 010000000000000000000501;
+			remoteInfo = FacePassCompanionCore;
+		};
+		010000000000000000000302 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 010000000000000000000400 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 010000000000000000000503;
+			remoteInfo = FacePassCompanionWidgetExtension;
+		};
+		010000000000000000000303 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 010000000000000000000400 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 010000000000000000000501;
+			remoteInfo = FacePassCompanionCore;
+		};
+		010000000000000000000304 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 010000000000000000000400 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 010000000000000000000501;
+			remoteInfo = FacePassCompanionCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		010000000000000000000601 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				010000000000000000000032 /* FacePassCompanionCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000602 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				010000000000000000000033 /* FacePassCompanionWidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000603 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				010000000000000000000046 /* FacePassCompanionCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		010000000000000000000101 /* StandByUnlockModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByUnlockModels.swift; sourceTree = "<group>"; };
+		010000000000000000000102 /* CanonicalPayloadSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalPayloadSigner.swift; sourceTree = "<group>"; };
+		010000000000000000000103 /* CompanionKeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionKeyStore.swift; sourceTree = "<group>"; };
+		010000000000000000000104 /* EndpointCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointCache.swift; sourceTree = "<group>"; };
+		010000000000000000000105 /* BonjourRediscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourRediscoveryService.swift; sourceTree = "<group>"; };
+		010000000000000000000106 /* StandByUnlockClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByUnlockClient.swift; sourceTree = "<group>"; };
+		010000000000000000000107 /* PairingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingClient.swift; sourceTree = "<group>"; };
+		010000000000000000000108 /* StandByUnlockCounterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByUnlockCounterStore.swift; sourceTree = "<group>"; };
+		010000000000000000000109 /* FacePassCompanionConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacePassCompanionConfiguration.swift; sourceTree = "<group>"; };
+		010000000000000000000110 /* StandByUnlockActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByUnlockActivityAttributes.swift; sourceTree = "<group>"; };
+		010000000000000000000121 /* FacePassCompanionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacePassCompanionApp.swift; sourceTree = "<group>"; };
+		010000000000000000000122 /* FacePassCompanionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacePassCompanionModel.swift; sourceTree = "<group>"; };
+		010000000000000000000123 /* PairingScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingScanView.swift; sourceTree = "<group>"; };
+		010000000000000000000124 /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
+		010000000000000000000125 /* PairingPayloadDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingPayloadDecoder.swift; sourceTree = "<group>"; };
+		010000000000000000000126 /* PairedStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairedStatusView.swift; sourceTree = "<group>"; };
+		010000000000000000000127 /* StandByLiveActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByLiveActivityController.swift; sourceTree = "<group>"; };
+		010000000000000000000128 /* StandByUnlockIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByUnlockIntent.swift; sourceTree = "<group>"; };
+		010000000000000000000129 /* StandByIntentDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByIntentDependencies.swift; sourceTree = "<group>"; };
+		010000000000000000000130 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		010000000000000000000131 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		010000000000000000000132 /* FacePassCompanion.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FacePassCompanion.entitlements; sourceTree = "<group>"; };
+		010000000000000000000133 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		010000000000000000000141 /* FacePassCompanionWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacePassCompanionWidgetBundle.swift; sourceTree = "<group>"; };
+		010000000000000000000142 /* StandByUnlockLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByUnlockLiveActivityWidget.swift; sourceTree = "<group>"; };
+		010000000000000000000145 /* StandByUnlockWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByUnlockWidget.swift; sourceTree = "<group>"; };
+		010000000000000000000143 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		010000000000000000000144 /* FacePassCompanionWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FacePassCompanionWidgetExtension.entitlements; sourceTree = "<group>"; };
+		010000000000000000000146 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		010000000000000000000161 /* CanonicalPayloadSignerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalPayloadSignerTests.swift; sourceTree = "<group>"; };
+		010000000000000000000162 /* EndpointCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointCacheTests.swift; sourceTree = "<group>"; };
+		010000000000000000000163 /* StandByUnlockClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByUnlockClientTests.swift; sourceTree = "<group>"; };
+		010000000000000000000201 /* FacePassCompanion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FacePassCompanion.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		010000000000000000000202 /* FacePassCompanionCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FacePassCompanionCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		010000000000000000000203 /* FacePassCompanionWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FacePassCompanionWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		010000000000000000000204 /* FacePassCompanionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FacePassCompanionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		010000000000000000000701 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000702 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000031 /* FacePassCompanionCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000703 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000045 /* FacePassCompanionCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000704 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000064 /* FacePassCompanionCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		010000000000000000000801 = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000802 /* FacePassCompanion */,
+				010000000000000000000808 /* FacePassCompanionTests */,
+				010000000000000000000809 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		010000000000000000000802 /* FacePassCompanion */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000803 /* App */,
+				010000000000000000000804 /* Models */,
+				010000000000000000000805 /* Services */,
+				010000000000000000000806 /* Features */,
+				010000000000000000000807 /* Intents */,
+				010000000000000000000810 /* Widgets */,
+				010000000000000000000811 /* Widget */,
+				010000000000000000000130 /* Assets.xcassets */,
+			);
+			path = FacePassCompanion;
+			sourceTree = "<group>";
+		};
+		010000000000000000000803 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000121 /* FacePassCompanionApp.swift */,
+				010000000000000000000122 /* FacePassCompanionModel.swift */,
+				010000000000000000000131 /* Info.plist */,
+				010000000000000000000132 /* FacePassCompanion.entitlements */,
+				010000000000000000000133 /* PrivacyInfo.xcprivacy */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		010000000000000000000804 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000101 /* StandByUnlockModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		010000000000000000000805 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000102 /* CanonicalPayloadSigner.swift */,
+				010000000000000000000103 /* CompanionKeyStore.swift */,
+				010000000000000000000104 /* EndpointCache.swift */,
+				010000000000000000000105 /* BonjourRediscoveryService.swift */,
+				010000000000000000000106 /* StandByUnlockClient.swift */,
+				010000000000000000000107 /* PairingClient.swift */,
+				010000000000000000000108 /* StandByUnlockCounterStore.swift */,
+				010000000000000000000109 /* FacePassCompanionConfiguration.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		010000000000000000000806 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000812 /* Pairing */,
+				010000000000000000000813 /* Status */,
+				010000000000000000000814 /* LiveActivity */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		010000000000000000000807 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000128 /* StandByUnlockIntent.swift */,
+				010000000000000000000129 /* StandByIntentDependencies.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
+		010000000000000000000808 /* FacePassCompanionTests */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000161 /* CanonicalPayloadSignerTests.swift */,
+				010000000000000000000162 /* EndpointCacheTests.swift */,
+				010000000000000000000163 /* StandByUnlockClientTests.swift */,
+			);
+			path = FacePassCompanionTests;
+			sourceTree = "<group>";
+		};
+		010000000000000000000809 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000201 /* FacePassCompanion.app */,
+				010000000000000000000202 /* FacePassCompanionCore.framework */,
+				010000000000000000000203 /* FacePassCompanionWidgetExtension.appex */,
+				010000000000000000000204 /* FacePassCompanionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		010000000000000000000810 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000110 /* StandByUnlockActivityAttributes.swift */,
+				010000000000000000000141 /* FacePassCompanionWidgetBundle.swift */,
+				010000000000000000000145 /* StandByUnlockWidget.swift */,
+				010000000000000000000142 /* StandByUnlockLiveActivityWidget.swift */,
+			);
+			path = Widgets;
+			sourceTree = "<group>";
+		};
+		010000000000000000000811 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000143 /* Info.plist */,
+				010000000000000000000144 /* FacePassCompanionWidgetExtension.entitlements */,
+				010000000000000000000146 /* PrivacyInfo.xcprivacy */,
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
+		010000000000000000000812 /* Pairing */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000123 /* PairingScanView.swift */,
+				010000000000000000000124 /* QRCodeScannerView.swift */,
+				010000000000000000000125 /* PairingPayloadDecoder.swift */,
+			);
+			path = Pairing;
+			sourceTree = "<group>";
+		};
+		010000000000000000000813 /* Status */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000126 /* PairedStatusView.swift */,
+			);
+			path = Status;
+			sourceTree = "<group>";
+		};
+		010000000000000000000814 /* LiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				010000000000000000000127 /* StandByLiveActivityController.swift */,
+			);
+			path = LiveActivity;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		010000000000000000000501 /* FacePassCompanionCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 010000000000000000000901 /* Build configuration list for PBXNativeTarget "FacePassCompanionCore" */;
+			buildPhases = (
+				010000000000000000000701 /* Frameworks */,
+				010000000000000000000A01 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FacePassCompanionCore;
+			productName = FacePassCompanionCore;
+			productReference = 010000000000000000000202 /* FacePassCompanionCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		010000000000000000000502 /* FacePassCompanion */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 010000000000000000000902 /* Build configuration list for PBXNativeTarget "FacePassCompanion" */;
+			buildPhases = (
+				010000000000000000000702 /* Frameworks */,
+				010000000000000000000A02 /* Sources */,
+				010000000000000000000B01 /* Resources */,
+				010000000000000000000601 /* Embed Frameworks */,
+				010000000000000000000602 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				010000000000000000000401 /* PBXTargetDependency */,
+				010000000000000000000402 /* PBXTargetDependency */,
+			);
+			name = FacePassCompanion;
+			productName = FacePassCompanion;
+			productReference = 010000000000000000000201 /* FacePassCompanion.app */;
+			productType = "com.apple.product-type.application";
+		};
+		010000000000000000000503 /* FacePassCompanionWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 010000000000000000000903 /* Build configuration list for PBXNativeTarget "FacePassCompanionWidgetExtension" */;
+			buildPhases = (
+				010000000000000000000703 /* Frameworks */,
+				010000000000000000000A03 /* Sources */,
+				010000000000000000000B03 /* Resources */,
+				010000000000000000000603 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				010000000000000000000403 /* PBXTargetDependency */,
+			);
+			name = FacePassCompanionWidgetExtension;
+			productName = FacePassCompanionWidgetExtension;
+			productReference = 010000000000000000000203 /* FacePassCompanionWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		010000000000000000000504 /* FacePassCompanionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 010000000000000000000904 /* Build configuration list for PBXNativeTarget "FacePassCompanionTests" */;
+			buildPhases = (
+				010000000000000000000704 /* Frameworks */,
+				010000000000000000000A04 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				010000000000000000000404 /* PBXTargetDependency */,
+			);
+			name = FacePassCompanionTests;
+			productName = FacePassCompanionTests;
+			productReference = 010000000000000000000204 /* FacePassCompanionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		010000000000000000000400 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2641;
+				LastUpgradeCheck = 2641;
+				TargetAttributes = {
+					010000000000000000000501 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					010000000000000000000502 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					010000000000000000000503 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					010000000000000000000504 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = 010000000000000000000501;
+					};
+				};
+			};
+			buildConfigurationList = 010000000000000000000900 /* Build configuration list for PBXProject "FacePassCompanion" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 010000000000000000000801;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 010000000000000000000809 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				010000000000000000000502 /* FacePassCompanion */,
+				010000000000000000000501 /* FacePassCompanionCore */,
+				010000000000000000000503 /* FacePassCompanionWidgetExtension */,
+				010000000000000000000504 /* FacePassCompanionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		010000000000000000000B01 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000030 /* Assets.xcassets in Resources */,
+				010000000000000000000035 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000B03 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000034 /* Assets.xcassets in Resources */,
+				010000000000000000000048 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		010000000000000000000A01 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000001 /* StandByUnlockModels.swift in Sources */,
+				010000000000000000000002 /* CanonicalPayloadSigner.swift in Sources */,
+				010000000000000000000003 /* CompanionKeyStore.swift in Sources */,
+				010000000000000000000004 /* EndpointCache.swift in Sources */,
+				010000000000000000000005 /* BonjourRediscoveryService.swift in Sources */,
+				010000000000000000000006 /* StandByUnlockClient.swift in Sources */,
+				010000000000000000000007 /* PairingClient.swift in Sources */,
+				010000000000000000000008 /* StandByUnlockCounterStore.swift in Sources */,
+				010000000000000000000009 /* FacePassCompanionConfiguration.swift in Sources */,
+				010000000000000000000010 /* StandByUnlockActivityAttributes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000A02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000021 /* FacePassCompanionApp.swift in Sources */,
+				010000000000000000000022 /* FacePassCompanionModel.swift in Sources */,
+				010000000000000000000023 /* PairingScanView.swift in Sources */,
+				010000000000000000000024 /* QRCodeScannerView.swift in Sources */,
+				010000000000000000000025 /* PairingPayloadDecoder.swift in Sources */,
+				010000000000000000000026 /* PairedStatusView.swift in Sources */,
+				010000000000000000000027 /* StandByLiveActivityController.swift in Sources */,
+				010000000000000000000028 /* StandByUnlockIntent.swift in Sources */,
+				010000000000000000000029 /* StandByIntentDependencies.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000A03 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000041 /* FacePassCompanionWidgetBundle.swift in Sources */,
+				010000000000000000000047 /* StandByUnlockWidget.swift in Sources */,
+				010000000000000000000042 /* StandByUnlockLiveActivityWidget.swift in Sources */,
+				010000000000000000000043 /* StandByUnlockIntent.swift in Sources */,
+				010000000000000000000044 /* StandByIntentDependencies.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		010000000000000000000A04 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				010000000000000000000061 /* CanonicalPayloadSignerTests.swift in Sources */,
+				010000000000000000000062 /* EndpointCacheTests.swift in Sources */,
+				010000000000000000000063 /* StandByUnlockClientTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		010000000000000000000401 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 010000000000000000000501 /* FacePassCompanionCore */;
+			targetProxy = 010000000000000000000301 /* PBXContainerItemProxy */;
+		};
+		010000000000000000000402 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 010000000000000000000503 /* FacePassCompanionWidgetExtension */;
+			targetProxy = 010000000000000000000302 /* PBXContainerItemProxy */;
+		};
+		010000000000000000000403 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 010000000000000000000501 /* FacePassCompanionCore */;
+			targetProxy = 010000000000000000000303 /* PBXContainerItemProxy */;
+		};
+		010000000000000000000404 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 010000000000000000000501 /* FacePassCompanionCore */;
+			targetProxy = 010000000000000000000304 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		010000000000000000000D01 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		010000000000000000000D02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		010000000000000000000D11 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FacePassCompanionCore;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.facepass.companion.core;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		010000000000000000000D12 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FacePassCompanionCore;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.facepass.companion.core;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		010000000000000000000D21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = FacePassCompanion/App/FacePassCompanion.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WDAN6HW5VM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FacePassCompanion/App/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.facepass.companion;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		010000000000000000000D22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = FacePassCompanion/App/FacePassCompanion.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WDAN6HW5VM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FacePassCompanion/App/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.facepass.companion;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		010000000000000000000D31 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = FacePassCompanion/Widget/FacePassCompanionWidgetExtension.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WDAN6HW5VM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FacePassCompanion/Widget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.facepass.companion.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		010000000000000000000D32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = FacePassCompanion/Widget/FacePassCompanionWidgetExtension.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WDAN6HW5VM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FacePassCompanion/Widget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.facepass.companion.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		010000000000000000000D41 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.facepass.companion.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		010000000000000000000D42 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.facepass.companion.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		010000000000000000000900 /* Build configuration list for PBXProject "FacePassCompanion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				010000000000000000000D01 /* Debug */,
+				010000000000000000000D02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		010000000000000000000901 /* Build configuration list for PBXNativeTarget "FacePassCompanionCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				010000000000000000000D11 /* Debug */,
+				010000000000000000000D12 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		010000000000000000000902 /* Build configuration list for PBXNativeTarget "FacePassCompanion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				010000000000000000000D21 /* Debug */,
+				010000000000000000000D22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		010000000000000000000903 /* Build configuration list for PBXNativeTarget "FacePassCompanionWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				010000000000000000000D31 /* Debug */,
+				010000000000000000000D32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		010000000000000000000904 /* Build configuration list for PBXNativeTarget "FacePassCompanionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				010000000000000000000D41 /* Debug */,
+				010000000000000000000D42 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 010000000000000000000400 /* Project object */;
+}

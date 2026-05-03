@@ -514,6 +514,78 @@ final class AccessibilityAutofillServiceTests: XCTestCase {
         XCTAssertEqual(client.forbiddenConfirmationActionCount, 0)
     }
 
+    func testLocalAuthenticationUIAgentApplePasswordsUnlockPromptTextAllowsValueOnlyFill() {
+        let password = testPassword()
+        let client = SpyAccessibilityElementClient(focusedElement: .localAuthenticationApplePasswordsUnlockPasswordField)
+        let service = AccessibilityAutofillService(
+            permissionChecker: StubAccessibilityPermissionChecker(isTrusted: true),
+            elementClient: client
+        )
+
+        let result = service.fillFocusedPasswordField(with: password)
+
+        XCTAssertEqual(result, .filled)
+        XCTAssertEqual(client.recordedEvents.count, 2)
+        XCTAssertEqual(client.recordedEvents.first, .requestedFocusedElement)
+        XCTAssertEqual(client.recordedEvents.last?.kind, .setValue)
+        XCTAssertTrue(client.didSetExpectedPassword(password))
+        XCTAssertFalse(String(describing: client.recordedEvents).contains(password))
+        XCTAssertEqual(client.forbiddenConfirmationActionCount, 0)
+    }
+
+    func testLocalAuthenticationUIAgentPasswordsTitleWithGenericSignInTextPreventsFill() {
+        let client = SpyAccessibilityElementClient(
+            focusedElement: .localAuthenticationApplePasswordsGenericSignInPasswordField
+        )
+        let service = AccessibilityAutofillService(
+            permissionChecker: StubAccessibilityPermissionChecker(isTrusted: true),
+            elementClient: client
+        )
+
+        let result = service.fillFocusedPasswordField(with: testPassword())
+
+        XCTAssertEqual(result, .noFocusedPasswordField)
+        XCTAssertEqual(client.recordedEvents, [
+            .requestedFocusedElement,
+            .requestedAuthorizationPasswordFieldCandidates
+        ])
+        XCTAssertNil(client.lastSetValue)
+        XCTAssertEqual(client.forbiddenConfirmationActionCount, 0)
+    }
+
+    func testNilFocusedElementFallsBackToSingleDiscoverableApplePasswordsUnlockSecureField() {
+        let password = testPassword()
+        let client = SpyAccessibilityElementClient(
+            focusedElement: nil,
+            authorizationPasswordFieldCandidates: [
+                .localAuthenticationApplePasswordsUnlockPasswordField
+            ]
+        )
+        let service = AccessibilityAutofillService(
+            permissionChecker: StubAccessibilityPermissionChecker(isTrusted: true),
+            elementClient: client
+        )
+
+        let status = service.focusedAuthorizationPromptStatus()
+        let result = service.fillFocusedPasswordField(with: password)
+
+        XCTAssertEqual(status, .available)
+        XCTAssertEqual(result, .filled)
+        XCTAssertEqual(client.recordedEvents, [
+            .requestedFocusedElement,
+            .requestedAuthorizationPasswordFieldCandidates,
+            .requestedFocusedElement,
+            .requestedAuthorizationPasswordFieldCandidates,
+            .setValue(
+                elementID: AccessibilityElementSnapshot.localAuthenticationApplePasswordsUnlockPasswordField.id,
+                valueLength: password.count
+            )
+        ])
+        XCTAssertTrue(client.didSetExpectedPassword(password))
+        XCTAssertFalse(String(describing: client.recordedEvents).contains(password))
+        XCTAssertEqual(client.forbiddenConfirmationActionCount, 0)
+    }
+
     func testLocalAuthenticationUIAgentGenericPromptTextPreventsFill() {
         let client = SpyAccessibilityElementClient(focusedElement: .localAuthenticationGenericPasswordField)
         let service = AccessibilityAutofillService(
@@ -528,6 +600,24 @@ final class AccessibilityAutofillServiceTests: XCTestCase {
             .requestedFocusedElement,
             .requestedAuthorizationPasswordFieldCandidates
         ])
+    }
+
+    func testLocalAuthenticationUIAgentSignInPromptWithoutApprovedContextPreventsFill() {
+        let client = SpyAccessibilityElementClient(focusedElement: .localAuthenticationGenericSignInPasswordField)
+        let service = AccessibilityAutofillService(
+            permissionChecker: StubAccessibilityPermissionChecker(isTrusted: true),
+            elementClient: client
+        )
+
+        let result = service.fillFocusedPasswordField(with: testPassword())
+
+        XCTAssertEqual(result, .noFocusedPasswordField)
+        XCTAssertEqual(client.recordedEvents, [
+            .requestedFocusedElement,
+            .requestedAuthorizationPasswordFieldCandidates
+        ])
+        XCTAssertNil(client.lastSetValue)
+        XCTAssertEqual(client.forbiddenConfirmationActionCount, 0)
     }
 
     func testSystemSettingsPrivacySecuritySecureFieldWithoutPromptTextPreventsFill() {
@@ -809,6 +899,30 @@ private extension AccessibilityElementSnapshot {
         authorizationPromptMetadata: .localAuthenticationPrivacySecurityAuthorization
     )
 
+    static let localAuthenticationApplePasswordsUnlockPasswordField = AccessibilityElementSnapshot(
+        id: AccessibilityElementID(rawValue: "local-authentication-apple-passwords-unlock-password"),
+        role: AccessibilityRole.textField,
+        subrole: AccessibilitySubrole.secureTextField,
+        isEnabled: true,
+        isSettable: true,
+        authorizationPromptMetadata: .localAuthenticationApplePasswordsUnlock,
+        fieldTextFragments: [
+            "Password:"
+        ]
+    )
+
+    static let localAuthenticationApplePasswordsGenericSignInPasswordField = AccessibilityElementSnapshot(
+        id: AccessibilityElementID(rawValue: "local-authentication-apple-passwords-generic-sign-in-password"),
+        role: AccessibilityRole.textField,
+        subrole: AccessibilitySubrole.secureTextField,
+        isEnabled: true,
+        isSettable: true,
+        authorizationPromptMetadata: .localAuthenticationApplePasswordsGenericSignIn,
+        fieldTextFragments: [
+            "Password:"
+        ]
+    )
+
     static let localAuthenticationPrivacySecurityAuthorizationNameField = AccessibilityElementSnapshot(
         id: AccessibilityElementID(rawValue: "local-authentication-privacy-security-authorization-name"),
         role: AccessibilityRole.textField,
@@ -828,6 +942,18 @@ private extension AccessibilityElementSnapshot {
         isEnabled: true,
         isSettable: true,
         authorizationPromptMetadata: .localAuthenticationGeneric
+    )
+
+    static let localAuthenticationGenericSignInPasswordField = AccessibilityElementSnapshot(
+        id: AccessibilityElementID(rawValue: "local-authentication-generic-sign-in-password"),
+        role: AccessibilityRole.textField,
+        subrole: AccessibilitySubrole.secureTextField,
+        isEnabled: true,
+        isSettable: true,
+        authorizationPromptMetadata: .localAuthenticationGenericSignIn,
+        fieldTextFragments: [
+            "Password:"
+        ]
     )
 
     static let systemSettingsPrivacySecurityNonAuthorizationPasswordField = AccessibilityElementSnapshot(
@@ -950,6 +1076,29 @@ private extension AuthorizationPromptMetadata {
         ]
     )
 
+    static let localAuthenticationApplePasswordsUnlock = AuthorizationPromptMetadata(
+        bundleIdentifier: "com.apple.LocalAuthentication.UIAgent",
+        processName: "coreautha",
+        windowTitle: "Passwords",
+        promptTextFragments: [
+            "Passwords",
+            "Sign in with \u{201C}MacBook Pro\u{201D}.",
+            "Enter the computer account password for the user \u{201C}test.user\u{201D}."
+        ]
+    )
+
+    static let localAuthenticationApplePasswordsGenericSignIn = AuthorizationPromptMetadata(
+        bundleIdentifier: "com.apple.LocalAuthentication.UIAgent",
+        processName: "coreautha",
+        windowTitle: "Passwords",
+        promptTextFragments: [
+            "Passwords",
+            "Sign in with your computer password to continue.",
+            "Enter the computer account password for this Mac.",
+            "View passwords."
+        ]
+    )
+
     static let localAuthenticationGeneric = AuthorizationPromptMetadata(
         bundleIdentifier: "com.apple.LocalAuthentication.UIAgent",
         processName: "coreautha",
@@ -957,6 +1106,16 @@ private extension AuthorizationPromptMetadata {
         promptTextFragments: [
             "FacePass Test App wants to authenticate.",
             "Enter your password to continue."
+        ]
+    )
+
+    static let localAuthenticationGenericSignIn = AuthorizationPromptMetadata(
+        bundleIdentifier: "com.apple.LocalAuthentication.UIAgent",
+        processName: "coreautha",
+        windowTitle: "Sign In",
+        promptTextFragments: [
+            "Sign in with your computer password to continue.",
+            "Enter the computer account password for this Mac."
         ]
     )
 

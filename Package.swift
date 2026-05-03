@@ -17,13 +17,19 @@ let package = Package(
             targets: ["FacePass"]
         )
     ],
+    dependencies: [
+        .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.9.1")
+    ],
     targets: [
         .target(
             name: "FacePassCore"
         ),
         .executableTarget(
             name: "FacePass",
-            dependencies: ["FacePassCore"]
+            dependencies: [
+                "FacePassCore",
+                .product(name: "Sparkle", package: "Sparkle")
+            ]
         ),
         .testTarget(
             name: "FacePassCoreTests",

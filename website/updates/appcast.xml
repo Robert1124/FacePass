@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>FacePass Updates</title>
+    <link>https://facepass.app/updates/appcast.xml</link>
+    <description>FacePass Sparkle update feed. No public updates are published yet.</description>
+    <language>en</language>
+  </channel>
+</rss>

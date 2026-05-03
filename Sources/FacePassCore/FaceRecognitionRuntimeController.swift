@@ -84,9 +84,12 @@ public protocol FaceRecognitionBundledModelURLProviding {
 
 public final class FaceRecognitionRuntimeController {
     public static let modelPathDefaultsKey = "FacePass.recognitionPrototype.modelPath"
+    public static let unlockMinimumSimilarityDefaultsKey = "FacePass.recognitionPrototype.unlockMinimumSimilarity"
     public static let defaultCaptureTimeout: TimeInterval = 1
     public static let defaultUnlockCaptureTimeout: TimeInterval = 1
     public static let defaultUnlockMinimumSimilarity: Float = 0.35
+    public static let minimumAllowedUnlockSimilarity: Float = 0.20
+    public static let maximumAllowedUnlockSimilarity: Float = 0.75
     private static let defaultUnlockRequiredAcceptedMatches = 2
     private static let defaultUnlockMaximumUsableFrames = 3
     public static var defaultMaximumEnrollmentSampleCount: Int {
@@ -101,6 +104,7 @@ public final class FaceRecognitionRuntimeController {
     private let bundledModelURLProvider: any FaceRecognitionBundledModelURLProviding
     private let userDefaults: UserDefaults
     private let fileManager: FileManager
+    private let savedTemplateStateProvider: () -> Bool
     private let captureTimeout: TimeInterval
     private let minimumEnrollmentSampleCount: Int
     private let maximumEnrollmentSampleCount: Int
@@ -118,6 +122,7 @@ public final class FaceRecognitionRuntimeController {
         bundledModelURLProvider: any FaceRecognitionBundledModelURLProviding = MainBundleAuraFaceModelURLProvider(),
         userDefaults: UserDefaults = .standard,
         fileManager: FileManager = .default,
+        savedTemplateStateProvider: (() -> Bool)? = nil,
         developmentModelURLOverride: URL? = nil,
         captureTimeout: TimeInterval = FaceRecognitionRuntimeController.defaultCaptureTimeout,
         minimumEnrollmentSampleCount: Int = FaceEnrollmentService<CoreMLFaceEmbeddingProvider>.defaultMinimumSampleCount,
@@ -129,6 +134,14 @@ public final class FaceRecognitionRuntimeController {
         self.bundledModelURLProvider = bundledModelURLProvider
         self.userDefaults = userDefaults
         self.fileManager = fileManager
+        let resolvedSavedTemplateStateProvider = savedTemplateStateProvider ?? {
+            guard let store = try? FaceTemplateStore(fileManager: fileManager) else {
+                return false
+            }
+
+            return fileManager.fileExists(atPath: store.encryptedFileURL.path)
+        }
+        self.savedTemplateStateProvider = resolvedSavedTemplateStateProvider
         self.captureTimeout = max(0, captureTimeout)
         self.minimumEnrollmentSampleCount = max(1, minimumEnrollmentSampleCount)
         self.maximumEnrollmentSampleCount = max(self.minimumEnrollmentSampleCount, maximumEnrollmentSampleCount)
@@ -138,9 +151,19 @@ public final class FaceRecognitionRuntimeController {
             modelPath: developmentModelURLOverride?.path ?? "",
             capturedEnrollmentSampleCount: 0,
             requiredEnrollmentSampleCount: max(1, minimumEnrollmentSampleCount),
+            hasSavedEnrollmentTemplate: resolvedSavedTemplateStateProvider(),
+            unlockMinimumSimilarity: Self.sanitizedUnlockMinimumSimilarity(
+                userDefaults.object(forKey: Self.unlockMinimumSimilarityDefaultsKey).map { _ in
+                    Float(userDefaults.double(forKey: Self.unlockMinimumSimilarityDefaultsKey))
+                } ?? Self.defaultUnlockMinimumSimilarity
+            ),
             lastModelChecksumSHA256: nil,
             status: .idle
         )
+    }
+
+    public func refreshStoredTemplateState() {
+        state.hasSavedEnrollmentTemplate = savedTemplateStateProvider()
     }
 
     public func setModelPath(_ path: String) {
@@ -174,6 +197,25 @@ public final class FaceRecognitionRuntimeController {
         state.status = .enrollmentSamplesCleared
     }
 
+    public func clearEnrollment() {
+        clearCapturedEnrollmentSamplesForPrivacy()
+        do {
+            try FaceTemplateStore(fileManager: fileManager).delete()
+            state.lastModelChecksumSHA256 = nil
+            state.hasSavedEnrollmentTemplate = false
+            state.status = .enrollmentSamplesCleared
+        } catch {
+            refreshStoredTemplateState()
+            state.status = .enrollmentSaveFailed(reason: .unknown)
+        }
+    }
+
+    public func setUnlockMinimumSimilarity(_ minimumSimilarity: Float) {
+        let sanitized = Self.sanitizedUnlockMinimumSimilarity(minimumSimilarity)
+        state.unlockMinimumSimilarity = sanitized
+        userDefaults.set(Double(sanitized), forKey: Self.unlockMinimumSimilarityDefaultsKey)
+    }
+
     public func captureEnrollmentSample() async {
         guard !isEnrollmentCaptureInFlight, !isEnrollmentSaveInFlight, !isObserveInFlight else {
             state.status = .busy
@@ -200,10 +242,15 @@ public final class FaceRecognitionRuntimeController {
                 )
             }
             state.capturedEnrollmentSampleCount = capturedEnrollmentSamples.count
-            state.status = .enrollmentSampleCaptured(
-                captured: capturedEnrollmentSamples.count,
-                required: minimumEnrollmentSampleCount
-            )
+            if capturedEnrollmentSamples.count >= minimumEnrollmentSampleCount {
+                isEnrollmentCaptureInFlight = false
+                await saveEnrollment()
+            } else {
+                state.status = .enrollmentSampleCaptured(
+                    captured: capturedEnrollmentSamples.count,
+                    required: minimumEnrollmentSampleCount
+                )
+            }
         case .permissionDenied:
             state.status = .cameraPermissionDenied
         case .timedOut:
@@ -272,6 +319,7 @@ public final class FaceRecognitionRuntimeController {
             )
             clearCapturedEnrollmentSamplesForPrivacy()
             state.lastModelChecksumSHA256 = checksum
+            state.hasSavedEnrollmentTemplate = true
             state.status = .enrollmentSaved(
                 sampleCount: record.embeddings.count,
                 modelVersion: record.modelVersion
@@ -380,7 +428,7 @@ public final class FaceRecognitionRuntimeController {
 
         let policy = FaceRecognitionPolicy(
             threshold: FaceRecognitionThreshold(
-                minimumSimilarity: Self.defaultUnlockMinimumSimilarity,
+                minimumSimilarity: state.unlockMinimumSimilarity,
                 modelVersion: workflow.modelVersion
             ),
             requiredAcceptedMatches: Self.defaultUnlockRequiredAcceptedMatches,
@@ -522,6 +570,14 @@ public final class FaceRecognitionRuntimeController {
         capturedEnrollmentSamples.removeAll()
         state.capturedEnrollmentSampleCount = 0
     }
+
+    private static func sanitizedUnlockMinimumSimilarity(_ value: Float) -> Float {
+        guard value.isFinite else {
+            return defaultUnlockMinimumSimilarity
+        }
+
+        return min(max(value, minimumAllowedUnlockSimilarity), maximumAllowedUnlockSimilarity)
+    }
 }
 
 public struct MainBundleAuraFaceModelURLProvider: FaceRecognitionBundledModelURLProviding {
@@ -628,6 +684,8 @@ public struct FaceRecognitionRuntimeState: Equatable {
     public var modelPath: String
     public var capturedEnrollmentSampleCount: Int
     public let requiredEnrollmentSampleCount: Int
+    public var hasSavedEnrollmentTemplate: Bool
+    public var unlockMinimumSimilarity: Float
     public var lastModelChecksumSHA256: String?
     public var status: FaceRecognitionRuntimeStatus
 
@@ -635,12 +693,16 @@ public struct FaceRecognitionRuntimeState: Equatable {
         modelPath: String,
         capturedEnrollmentSampleCount: Int,
         requiredEnrollmentSampleCount: Int,
+        hasSavedEnrollmentTemplate: Bool = false,
+        unlockMinimumSimilarity: Float = FaceRecognitionRuntimeController.defaultUnlockMinimumSimilarity,
         lastModelChecksumSHA256: String?,
         status: FaceRecognitionRuntimeStatus
     ) {
         self.modelPath = modelPath
         self.capturedEnrollmentSampleCount = max(0, capturedEnrollmentSampleCount)
         self.requiredEnrollmentSampleCount = max(1, requiredEnrollmentSampleCount)
+        self.hasSavedEnrollmentTemplate = hasSavedEnrollmentTemplate
+        self.unlockMinimumSimilarity = unlockMinimumSimilarity
         self.lastModelChecksumSHA256 = lastModelChecksumSHA256
         self.status = status
     }

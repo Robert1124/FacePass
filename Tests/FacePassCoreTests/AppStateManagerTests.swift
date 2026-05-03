@@ -1921,6 +1921,497 @@ final class AppStateManagerTests: XCTestCase {
         XCTAssertEqual(runtime.unregisteredEventIDs, [runtime.registrations[0].eventID])
     }
 
+    @MainActor
+    func testStandByUnlockVerifiedRequestBypassesLocalRecognitionAndUsesLockScreenPathOnlyWhileLocked() async throws {
+        let isolatedDefaults = makeIsolatedUserDefaults()
+        let secret = "app-state-secret-\(UUID().uuidString)"
+        let vault = SpyPasswordVault(storedPassword: secret)
+        let typer = RecordingLockScreenPasswordTyper()
+        let displayWake = RecordingDisplayWakeController()
+        let recognitionCapture = FailingAppStateRecognitionSampleCapture()
+        let recognition = try makeRecognitionController(
+            userDefaults: isolatedDefaults.defaults,
+            sampleCaptureService: recognitionCapture
+        )
+        let verifier = StubStandByUnlockVerifier(result: .verified(makeVerifiedStandByUnlockRequest()))
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: [.accessibility(.authorized)]),
+            passwordVault: vault,
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: true, result: .filled),
+            lockScreenStateProvider: StubLockScreenStateProvider(isSessionLocked: true),
+            lockScreenPasswordTyper: typer,
+            recognitionRuntimeController: recognition,
+            standByUnlockVerifier: verifier,
+            displayWakeController: displayWake,
+            conditionSignalProvider: StubAppStateConditionSignalProvider(snapshot: .automationTrusted),
+            userDefaults: isolatedDefaults.defaults
+        )
+
+        manager.setStandByUnlockEnabled(true)
+        await manager.handleStandByUnlockRequest(makeStandByUnlockRequest())
+
+        XCTAssertEqual(verifier.verifiedRequestIds, ["standby-request-1"])
+        XCTAssertEqual(displayWake.wakeCount, 1)
+        XCTAssertEqual(manager.lastStandByUnlockResult, .unlockResult(.typedPasswordAndSubmitted))
+        XCTAssertEqual(
+            vault.events.filter { $0 == .readPassword(account: defaultPasswordAccountIdentifier) }.count,
+            1
+        )
+        XCTAssertEqual(typer.events, [.typedPasswordAndSubmit(passwordLength: secret.count)])
+        XCTAssertTrue(typer.didReceiveExpectedPassword(secret))
+        XCTAssertEqual(recognitionCapture.requestedTimeouts, [])
+        XCTAssertFalse(String(describing: manager.lastStandByUnlockResult).contains(secret))
+    }
+
+    @MainActor
+    func testStandByUnlockDoesNotReadTypeWakeOrRunRecognitionWhenProviderDisabled() async throws {
+        let isolatedDefaults = makeIsolatedUserDefaults()
+        let vault = SpyPasswordVault(storedPassword: "app-state-secret-\(UUID().uuidString)")
+        let typer = RecordingLockScreenPasswordTyper()
+        let displayWake = RecordingDisplayWakeController()
+        let recognitionCapture = FailingAppStateRecognitionSampleCapture()
+        let recognition = try makeRecognitionController(
+            userDefaults: isolatedDefaults.defaults,
+            sampleCaptureService: recognitionCapture
+        )
+        let verifier = StubStandByUnlockVerifier(result: .verified(makeVerifiedStandByUnlockRequest()))
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: [.accessibility(.authorized)]),
+            passwordVault: vault,
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: true, result: .filled),
+            lockScreenStateProvider: StubLockScreenStateProvider(isSessionLocked: true),
+            lockScreenPasswordTyper: typer,
+            recognitionRuntimeController: recognition,
+            standByUnlockVerifier: verifier,
+            displayWakeController: displayWake,
+            userDefaults: isolatedDefaults.defaults
+        )
+
+        await manager.handleStandByUnlockRequest(makeStandByUnlockRequest())
+
+        XCTAssertEqual(manager.lastStandByUnlockResult, .disabled)
+        XCTAssertEqual(verifier.verifiedRequestIds, [])
+        XCTAssertEqual(displayWake.wakeCount, 0)
+        XCTAssertFalse(vault.events.contains(.readPassword(account: defaultPasswordAccountIdentifier)))
+        XCTAssertTrue(typer.events.isEmpty)
+        XCTAssertEqual(recognitionCapture.requestedTimeouts, [])
+    }
+
+    @MainActor
+    func testStandByUnlockRejectsInvalidRequestWithoutPasswordCameraOrTyping() async throws {
+        let isolatedDefaults = makeIsolatedUserDefaults()
+        let secret = "app-state-secret-\(UUID().uuidString)"
+        let vault = SpyPasswordVault(storedPassword: secret)
+        let typer = RecordingLockScreenPasswordTyper()
+        let displayWake = RecordingDisplayWakeController()
+        let recognitionCapture = FailingAppStateRecognitionSampleCapture()
+        let recognition = try makeRecognitionController(
+            userDefaults: isolatedDefaults.defaults,
+            sampleCaptureService: recognitionCapture
+        )
+        let verifier = StubStandByUnlockVerifier(result: .rejected(.unpairedIPhone))
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: [.accessibility(.authorized)]),
+            passwordVault: vault,
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: true, result: .filled),
+            lockScreenStateProvider: StubLockScreenStateProvider(isSessionLocked: true),
+            lockScreenPasswordTyper: typer,
+            recognitionRuntimeController: recognition,
+            standByUnlockVerifier: verifier,
+            displayWakeController: displayWake,
+            userDefaults: isolatedDefaults.defaults
+        )
+
+        manager.setStandByUnlockEnabled(true)
+        await manager.handleStandByUnlockRequest(makeStandByUnlockRequest(requestId: secret))
+
+        XCTAssertEqual(manager.lastStandByUnlockResult, .verificationFailed(.unpairedIPhone))
+        XCTAssertEqual(displayWake.wakeCount, 0)
+        XCTAssertFalse(vault.events.contains(.readPassword(account: defaultPasswordAccountIdentifier)))
+        XCTAssertTrue(typer.events.isEmpty)
+        XCTAssertEqual(recognitionCapture.requestedTimeouts, [])
+        XCTAssertFalse(String(describing: manager.lastStandByUnlockResult).contains(secret))
+    }
+
+    @MainActor
+    func testStandByUnlockUnlockedSessionMissingPasswordAccessibilityAndConditionsDoNotType() async throws {
+        let cases: [
+            (
+                name: String,
+                statuses: [PermissionStatus],
+                storedPassword: String?,
+                isSessionLocked: Bool,
+                conditionSnapshot: ConditionSignalSnapshot,
+                configureConditions: (AppStateManager) -> Void,
+                expectedResult: StandByUnlockAttemptStatus
+            )
+        ] = [
+            (
+                name: "unlocked session",
+                statuses: [.accessibility(.authorized)],
+                storedPassword: "app-state-secret-\(UUID().uuidString)",
+                isSessionLocked: false,
+                conditionSnapshot: .automationTrusted,
+                configureConditions: { _ in },
+                expectedResult: .authorizationPromptFillResult(.filled)
+            ),
+            (
+                name: "missing password",
+                statuses: [.accessibility(.authorized)],
+                storedPassword: nil,
+                isSessionLocked: true,
+                conditionSnapshot: .automationTrusted,
+                configureConditions: { _ in },
+                expectedResult: .unlockResult(.missingPassword)
+            ),
+            (
+                name: "accessibility denied",
+                statuses: [.accessibility(.denied)],
+                storedPassword: "app-state-secret-\(UUID().uuidString)",
+                isSessionLocked: true,
+                conditionSnapshot: .automationTrusted,
+                configureConditions: { _ in },
+                expectedResult: .unlockResult(.accessibilityPermissionDenied)
+            ),
+            (
+                name: "conditions rejected",
+                statuses: [.accessibility(.authorized)],
+                storedPassword: "app-state-secret-\(UUID().uuidString)",
+                isSessionLocked: true,
+                conditionSnapshot: ConditionSignalSnapshot(
+                    wifi: .unavailable,
+                    externalDisplays: .connected([]),
+                    power: .available(.battery),
+                    bluetooth: .inconclusive
+                ),
+                configureConditions: {
+                    $0.setAutomationConditionGateEnabled(true)
+                    $0.setAutomationRequiresWiFiConnected(true)
+                },
+                expectedResult: .conditionsNotSatisfied
+            )
+        ]
+
+        for testCase in cases {
+            let isolatedDefaults = makeIsolatedUserDefaults()
+            let vault = SpyPasswordVault(storedPassword: testCase.storedPassword)
+            let typer = RecordingLockScreenPasswordTyper()
+            let displayWake = RecordingDisplayWakeController()
+            let recognitionCapture = FailingAppStateRecognitionSampleCapture()
+            let recognition = try makeRecognitionController(
+                userDefaults: isolatedDefaults.defaults,
+                sampleCaptureService: recognitionCapture
+            )
+            let manager = AppStateManager(
+                permissionStatusProvider: StubPermissionStatusProvider(statuses: testCase.statuses),
+                passwordVault: vault,
+                autofillService: StubPasswordAutofillService(isAccessibilityTrusted: true, result: .filled),
+                lockScreenStateProvider: StubLockScreenStateProvider(isSessionLocked: testCase.isSessionLocked),
+                lockScreenPasswordTyper: typer,
+                recognitionRuntimeController: recognition,
+                standByUnlockVerifier: StubStandByUnlockVerifier(result: .verified(makeVerifiedStandByUnlockRequest())),
+                displayWakeController: displayWake,
+                conditionSignalProvider: StubAppStateConditionSignalProvider(snapshot: testCase.conditionSnapshot),
+                userDefaults: isolatedDefaults.defaults
+            )
+
+            manager.setStandByUnlockEnabled(true)
+            testCase.configureConditions(manager)
+            await manager.handleStandByUnlockRequest(makeStandByUnlockRequest())
+
+            XCTAssertEqual(manager.lastStandByUnlockResult, testCase.expectedResult, testCase.name)
+            XCTAssertEqual(displayWake.wakeCount, 0, testCase.name)
+            XCTAssertTrue(typer.events.isEmpty, testCase.name)
+            XCTAssertEqual(recognitionCapture.requestedTimeouts, [], testCase.name)
+            if testCase.expectedResult == .authorizationPromptFillResult(.filled) {
+                XCTAssertTrue(
+                    vault.events.contains(.readPassword(account: defaultPasswordAccountIdentifier)),
+                    testCase.name
+                )
+            } else {
+                XCTAssertFalse(
+                    vault.events.contains(.readPassword(account: defaultPasswordAccountIdentifier)),
+                    testCase.name
+                )
+            }
+        }
+    }
+
+    func testStartStandByPairingSessionPublishesSettingsSessionFromInjectedPairingControllerWithoutPublicKey() {
+        let store = RecordingStandByPairedDeviceStore()
+        let statusProvider = StubStandByHTTPServerStatusProvider(
+            httpStatus: .ready,
+            bonjourStatusDescription: "Published on _facepass._tcp"
+        )
+        let pairingController = StandByUnlockPairingController(
+            macDeviceId: "mac-standby-settings",
+            publicKeyFingerprint: "fp:settings:1234",
+            pairedDeviceStore: store,
+            clock: { standbyAppStateDate("2026-04-26T10:00:00Z") },
+            tokenGenerator: { "pairing-token-settings" }
+        )
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: []),
+            passwordVault: SpyPasswordVault(storedPassword: nil),
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: false, result: .filled),
+            standByPairingController: pairingController,
+            standByPairedDeviceStore: store,
+            standByHTTPServerStatusProvider: statusProvider,
+            userDefaults: makeIsolatedUserDefaults().defaults
+        )
+
+        manager.startStandByPairingSession()
+
+        XCTAssertEqual(manager.standByPairingState, .pairing)
+        XCTAssertEqual(manager.standByPairingSession?.macDeviceId, "mac-standby-settings")
+        XCTAssertEqual(manager.standByPairingSession?.protocolVersion, StandByUnlockPairingController.protocolVersion)
+        XCTAssertEqual(manager.standByPairingSession?.publicKeyFingerprint, "fp:settings:1234")
+        XCTAssertEqual(manager.standByPairingSession?.oneTimeToken, "pairing-token-settings")
+        XCTAssertEqual(
+            manager.standByPairingSession?.qrPayload["type"] as? String,
+            "facepass_standby_pairing"
+        )
+        XCTAssertEqual(
+            manager.standByIPhoneUnlockStatus.pairingQRCodePayload?["oneTimeToken"] as? String,
+            "pairing-token-settings"
+        )
+        XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains("PUBLIC-KEY-MATERIAL"))
+    }
+
+    func testStandByPairedStatusUsesStoreAsSourceOfTruthAndHidesQRCode() throws {
+        let store = RecordingStandByPairedDeviceStore()
+        let pairingController = StandByUnlockPairingController(
+            macDeviceId: "mac-standby-settings",
+            publicKeyFingerprint: "fp:settings:1234",
+            pairedDeviceStore: store,
+            clock: { standbyAppStateDate("2026-04-26T10:00:00Z") },
+            tokenGenerator: { "pairing-token-settings" }
+        )
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: []),
+            passwordVault: SpyPasswordVault(storedPassword: nil),
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: false, result: .filled),
+            standByPairingController: pairingController,
+            standByPairedDeviceStore: store,
+            standByHTTPServerStatusProvider: StubStandByHTTPServerStatusProvider(httpStatus: .ready),
+            userDefaults: makeIsolatedUserDefaults().defaults
+        )
+
+        manager.startStandByPairingSession()
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairingState, .pairing)
+        XCTAssertNotNil(manager.standByIPhoneUnlockStatus.pairingQRCodePayload)
+
+        try store.savePairedDevice(StandByPairedDevice(
+            iphoneDeviceId: "iphone-settings-blank-name",
+            displayName: "   ",
+            publicKeyX963Representation: Data("PUBLIC-KEY-MATERIAL".utf8),
+            signingAlgorithm: .p256SHA256,
+            isEnabled: true,
+            createdAt: standbyAppStateDate("2026-04-26T10:05:00Z"),
+            lastSeenAt: standbyAppStateDate("2026-04-26T10:06:00Z"),
+            highestAcceptedCounter: 1
+        ))
+        manager.refreshStandByUnlockStatus()
+
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairingState, .paired)
+        XCTAssertTrue(manager.standByIPhoneUnlockStatus.isPaired)
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairedIPhoneDisplayName, "Paired iPhone")
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairedIPhoneStatusText, "Paired iPhone")
+        XCTAssertNil(manager.standByIPhoneUnlockStatus.pairingQRCodePayload)
+        XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains("PUBLIC-KEY-MATERIAL"))
+    }
+
+    func testForgetStandByPairedIPhoneDeletesTrustRecordAndRefreshesNonSensitiveStatus() throws {
+        let pairedAt = standbyAppStateDate("2026-04-26T10:15:00Z")
+        let lastSeen = standbyAppStateDate("2026-04-26T11:45:00Z")
+        let publicKey = Data("PUBLIC-KEY-MATERIAL".utf8)
+        let store = RecordingStandByPairedDeviceStore(
+            device: StandByPairedDevice(
+                iphoneDeviceId: "iphone-settings-1",
+                displayName: "Yiwen's iPhone",
+                publicKeyX963Representation: publicKey,
+                signingAlgorithm: .p256SHA256,
+                isEnabled: true,
+                createdAt: pairedAt,
+                lastSeenAt: lastSeen,
+                highestAcceptedCounter: 42
+            )
+        )
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: []),
+            passwordVault: SpyPasswordVault(storedPassword: nil),
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: false, result: .filled),
+            standByPairedDeviceStore: store,
+            standByHTTPServerStatusProvider: StubStandByHTTPServerStatusProvider(httpStatus: .ready),
+            userDefaults: makeIsolatedUserDefaults().defaults
+        )
+
+        manager.refreshStandByUnlockStatus()
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairedIPhoneDisplayName, "Yiwen's iPhone")
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.lastSeenAt, lastSeen)
+
+        try manager.forgetStandByPairedIPhone()
+
+        XCTAssertEqual(store.deleteAllCount, 1)
+        XCTAssertEqual(store.remainingDeviceIDs, [])
+        XCTAssertNil(manager.standByIPhoneUnlockStatus.pairedIPhoneDisplayName)
+        XCTAssertNil(manager.standByIPhoneUnlockStatus.lastSeenAt)
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairingState, .notPaired)
+        XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains("PUBLIC-KEY-MATERIAL"))
+    }
+
+    func testForgetStandByPairedIPhoneDeletesAllHiddenTrustRecords() throws {
+        let publicKey = Data("PUBLIC-KEY-MATERIAL".utf8)
+        let store = RecordingStandByPairedDeviceStore(devices: [
+            StandByPairedDevice(
+                iphoneDeviceId: "iphone-hidden-older",
+                displayName: "Older iPhone",
+                publicKeyX963Representation: publicKey,
+                signingAlgorithm: .p256SHA256,
+                isEnabled: true,
+                createdAt: standbyAppStateDate("2026-04-26T09:00:00Z"),
+                lastSeenAt: nil,
+                highestAcceptedCounter: 1
+            ),
+            StandByPairedDevice(
+                iphoneDeviceId: "iphone-current-newer",
+                displayName: "Current iPhone",
+                publicKeyX963Representation: publicKey,
+                signingAlgorithm: .p256SHA256,
+                isEnabled: true,
+                createdAt: standbyAppStateDate("2026-04-26T10:00:00Z"),
+                lastSeenAt: standbyAppStateDate("2026-04-26T11:00:00Z"),
+                highestAcceptedCounter: 2
+            )
+        ])
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: []),
+            passwordVault: SpyPasswordVault(storedPassword: nil),
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: false, result: .filled),
+            standByPairedDeviceStore: store,
+            standByHTTPServerStatusProvider: StubStandByHTTPServerStatusProvider(httpStatus: .ready),
+            userDefaults: makeIsolatedUserDefaults().defaults
+        )
+
+        manager.refreshStandByUnlockStatus()
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairedIPhoneDisplayName, "Current iPhone")
+
+        try manager.forgetStandByPairedIPhone()
+
+        XCTAssertEqual(store.deleteAllCount, 1)
+        XCTAssertEqual(store.remainingDeviceIDs, [])
+        XCTAssertNil(manager.standByIPhoneUnlockStatus.pairedIPhoneDisplayName)
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairingState, .notPaired)
+        XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains("PUBLIC-KEY-MATERIAL"))
+    }
+
+    @MainActor
+    func testRefreshStandByUnlockStatusSurfacesRuntimePairingAndLastRequestStateWithoutSecrets() async {
+        let lastSeen = standbyAppStateDate("2026-04-26T12:30:00Z")
+        let secretRequestId = "standby-secret-request-\(UUID().uuidString)"
+        let publicKey = Data("PUBLIC-KEY-MATERIAL".utf8)
+        let store = RecordingStandByPairedDeviceStore(
+            device: StandByPairedDevice(
+                iphoneDeviceId: "iphone-settings-2",
+                displayName: "Desk iPhone",
+                publicKeyX963Representation: publicKey,
+                signingAlgorithm: .p256SHA256,
+                isEnabled: true,
+                createdAt: standbyAppStateDate("2026-04-26T09:00:00Z"),
+                lastSeenAt: lastSeen,
+                highestAcceptedCounter: 9
+            )
+        )
+        let statusProvider = StubStandByHTTPServerStatusProvider(
+            httpStatus: .starting,
+            bonjourStatusDescription: "Preparing Bonjour advertisement"
+        )
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: []),
+            passwordVault: SpyPasswordVault(storedPassword: nil),
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: false, result: .filled),
+            standByUnlockVerifier: StubStandByUnlockVerifier(result: .rejected(.replayedRequestId)),
+            standByPairedDeviceStore: store,
+            standByHTTPServerStatusProvider: statusProvider,
+            userDefaults: makeIsolatedUserDefaults().defaults
+        )
+
+        manager.setStandByUnlockEnabled(true)
+        await manager.handleStandByUnlockRequest(makeStandByUnlockRequest(requestId: secretRequestId))
+        manager.refreshStandByUnlockStatus()
+
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.httpServerStatus, .starting)
+        XCTAssertEqual(
+            manager.standByIPhoneUnlockStatus.bonjourStatusDescription,
+            "Preparing Bonjour advertisement"
+        )
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairingState, .paired)
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairedIPhoneDisplayName, "Desk iPhone")
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.lastSeenAt, lastSeen)
+        XCTAssertEqual(
+            manager.standByIPhoneUnlockStatus.lastRequestResult,
+            .verificationFailed(.replayedRequestId)
+        )
+        XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains(secretRequestId))
+        XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains("PUBLIC-KEY-MATERIAL"))
+    }
+
+    @MainActor
+    func testSuccessfulStandByUnlockRequestRecoversPairedStatusFromVerifiedTrustRecord() async throws {
+        let isolatedDefaults = makeIsolatedUserDefaults()
+        let secret = "app-state-secret-\(UUID().uuidString)"
+        let lastSeen = standbyAppStateDate("2026-04-27T14:05:00Z")
+        let store = RecordingStandByPairedDeviceStore(
+            device: StandByPairedDevice(
+                iphoneDeviceId: "iphone-standby-1",
+                displayName: "Verified iPhone",
+                publicKeyX963Representation: Data("PUBLIC-KEY-MATERIAL".utf8),
+                signingAlgorithm: .p256SHA256,
+                isEnabled: true,
+                createdAt: standbyAppStateDate("2026-04-27T13:55:00Z"),
+                lastSeenAt: lastSeen,
+                highestAcceptedCounter: 8
+            ),
+            allowsCurrentLookup: false
+        )
+        let pairingController = StandByUnlockPairingController(
+            macDeviceId: "mac-facepass-1",
+            publicKeyFingerprint: "fp:settings:1234",
+            pairedDeviceStore: store,
+            clock: { standbyAppStateDate("2026-04-27T14:00:00Z") },
+            tokenGenerator: { "pairing-token-settings" }
+        )
+        let manager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: [.accessibility(.authorized)]),
+            passwordVault: SpyPasswordVault(storedPassword: secret),
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: true, result: .filled),
+            lockScreenStateProvider: StubLockScreenStateProvider(isSessionLocked: true),
+            lockScreenPasswordTyper: RecordingLockScreenPasswordTyper(),
+            standByUnlockVerifier: StubStandByUnlockVerifier(result: .verified(makeVerifiedStandByUnlockRequest())),
+            standByPairingController: pairingController,
+            standByPairedDeviceStore: store,
+            displayWakeController: RecordingDisplayWakeController(),
+            conditionSignalProvider: StubAppStateConditionSignalProvider(snapshot: .automationTrusted),
+            userDefaults: isolatedDefaults.defaults
+        )
+
+        manager.startStandByPairingSession()
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairingState, .pairing)
+        XCTAssertNotNil(manager.standByIPhoneUnlockStatus.pairingQRCodePayload)
+
+        manager.setStandByUnlockEnabled(true)
+        await manager.handleStandByUnlockRequest(makeStandByUnlockRequest())
+
+        XCTAssertEqual(manager.lastStandByUnlockResult, .unlockResult(.typedPasswordAndSubmitted))
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairingState, .paired)
+        XCTAssertTrue(manager.standByIPhoneUnlockStatus.isPaired)
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.pairedIPhoneDisplayName, "Verified iPhone")
+        XCTAssertEqual(manager.standByIPhoneUnlockStatus.lastSeenAt, lastSeen)
+        XCTAssertNil(manager.standByIPhoneUnlockStatus.pairingQRCodePayload)
+        XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains(secret))
+        XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains("PUBLIC-KEY-MATERIAL"))
+    }
+
     private func makeIsolatedUserDefaults() -> IsolatedUserDefaults {
         let suiteName = "FacePass.AppStateManagerTests.\(UUID().uuidString)"
         guard let defaults = UserDefaults(suiteName: suiteName) else {
@@ -2035,6 +2526,35 @@ final class AppStateManagerTests: XCTestCase {
         }
 
         return image
+    }
+
+    private func makeStandByUnlockRequest(
+        requestId: String = "standby-request-1"
+    ) -> StandByUnlockRequest {
+        StandByUnlockRequest(
+            type: "standby_unlock_request",
+            protocolVersion: 1,
+            requestId: requestId,
+            iphoneDeviceId: "iphone-standby-1",
+            macDeviceId: "mac-facepass-1",
+            action: "unlock_screen",
+            issuedAt: standbyAppStateDate("2026-04-27T14:04:30Z"),
+            expiresAt: standbyAppStateDate("2026-04-27T14:05:30Z"),
+            counter: 8,
+            signature: Data("test-signature".utf8)
+        )
+    }
+
+    private func makeVerifiedStandByUnlockRequest(
+        requestId: String = "standby-request-1"
+    ) -> StandByVerifiedUnlockRequest {
+        StandByVerifiedUnlockRequest(
+            requestId: requestId,
+            macDeviceId: "mac-facepass-1",
+            iphoneDeviceId: "iphone-standby-1",
+            counter: 8,
+            verifiedAt: standbyAppStateDate("2026-04-27T14:05:00Z")
+        )
     }
 }
 
@@ -2400,6 +2920,119 @@ private final class RecordingAppStateUnlockScheduler: UnlockScheduler {
 
         scheduledActions.removeFirst()()
     }
+}
+
+private final class FailingAppStateRecognitionSampleCapture: FaceRecognitionSampleCapturing {
+    private(set) var requestedTimeouts: [TimeInterval] = []
+
+    func captureSample(timeout: TimeInterval) async -> FaceSampleCaptureResult {
+        requestedTimeouts.append(timeout)
+        XCTFail("StandBy Unlock must not invoke local Mac camera recognition.")
+        return .timedOut
+    }
+}
+
+private final class StubStandByUnlockVerifier: StandByUnlockVerifying {
+    enum Result {
+        case verified(StandByVerifiedUnlockRequest)
+        case rejected(StandByUnlockVerificationError)
+    }
+
+    private let result: Result
+    private(set) var verifiedRequestIds: [String] = []
+
+    init(result: Result) {
+        self.result = result
+    }
+
+    func verify(_ request: StandByUnlockRequest) throws -> StandByVerifiedUnlockRequest {
+        switch result {
+        case let .verified(verifiedRequest):
+            verifiedRequestIds.append(request.requestId)
+            return verifiedRequest
+        case let .rejected(error):
+            throw error
+        }
+    }
+}
+
+private final class RecordingDisplayWakeController: DisplayWakeControlling {
+    private(set) var wakeCount = 0
+
+    func wakeDisplay() {
+        wakeCount += 1
+    }
+}
+
+private final class RecordingStandByPairedDeviceStore: StandByPairedDeviceStoring {
+    private var devices: [String: StandByPairedDevice]
+    private let allowsCurrentLookup: Bool
+    private(set) var savedDevices: [StandByPairedDevice] = []
+    private(set) var deletedDeviceIDs: [String] = []
+    private(set) var deleteAllCount = 0
+
+    init(device: StandByPairedDevice? = nil, allowsCurrentLookup: Bool = true) {
+        self.devices = device.map { [$0.iphoneDeviceId: $0] } ?? [:]
+        self.allowsCurrentLookup = allowsCurrentLookup
+    }
+
+    init(devices: [StandByPairedDevice], allowsCurrentLookup: Bool = true) {
+        self.devices = Dictionary(uniqueKeysWithValues: devices.map { ($0.iphoneDeviceId, $0) })
+        self.allowsCurrentLookup = allowsCurrentLookup
+    }
+
+    func pairedDevice(forIPhoneDeviceId iphoneDeviceId: String) throws -> StandByPairedDevice? {
+        devices[iphoneDeviceId]
+    }
+
+    func currentPairedDevice() throws -> StandByPairedDevice? {
+        guard allowsCurrentLookup else {
+            return nil
+        }
+
+        return devices.values.sorted { $0.createdAt > $1.createdAt }.first
+    }
+
+    func savePairedDevice(_ device: StandByPairedDevice) throws {
+        devices[device.iphoneDeviceId] = device
+        savedDevices.append(device)
+    }
+
+    func deletePairedDevice(forIPhoneDeviceId iphoneDeviceId: String) throws {
+        devices[iphoneDeviceId] = nil
+        deletedDeviceIDs.append(iphoneDeviceId)
+    }
+
+    func deleteAllPairedDevices() throws {
+        devices.removeAll()
+        deleteAllCount += 1
+    }
+
+    var remainingDeviceIDs: [String] {
+        devices.keys.sorted()
+    }
+}
+
+private final class StubStandByHTTPServerStatusProvider: StandByHTTPServerStatusProviding {
+    var httpStatus: StandByUnlockHTTPServerStatus
+    var bonjourStatusDescription: String?
+
+    init(
+        httpStatus: StandByUnlockHTTPServerStatus,
+        bonjourStatusDescription: String? = nil
+    ) {
+        self.httpStatus = httpStatus
+        self.bonjourStatusDescription = bonjourStatusDescription
+    }
+}
+
+private func standbyAppStateDate(_ value: String) -> Date {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime]
+    guard let date = formatter.date(from: value) else {
+        fatalError("Invalid test date: \(value)")
+    }
+    return date
 }
 
 private extension XCTestCase {

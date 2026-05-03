@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="FacePass is a local macOS menu-bar helper for lock-screen assist and approved administrator prompt password fill."
+      content="FacePass is a local macOS menu-bar helper for local recognition lock-screen assist, iPhone StandBy approval, and approved authorization prompt value fill."
     >
     <title>FacePass - Local macOS Unlock Assist</title>
     <link rel="icon" href="assets/facepass-icon.png">
@@ -41,9 +41,9 @@
           >Unlock assist, kept local.</h1>
           <p
             class="hero-lede"
-            data-en="FacePass helps with two narrow workflows on your own Mac: lock-screen assist and value-only fill for approved administrator or System Settings authorization prompts."
-            data-zh="FacePass 只辅助你自己 Mac 上的两个窄范围流程：锁屏辅助，以及对已批准的管理员或“系统设置”授权提示进行仅填充值的密码填充。"
-          >FacePass helps with two narrow workflows on your own Mac: lock-screen assist and value-only fill for approved administrator or System Settings authorization prompts.</p>
+            data-en="FacePass helps with narrow workflows on your own Mac: local recognition lock-screen unlock assist, independent iPhone StandBy Unlock approval, and value-only fill for approved administrator or System Settings authorization prompts."
+            data-zh="FacePass 只辅助你自己 Mac 上的窄范围流程：本地识别锁屏解锁辅助、独立 iPhone StandBy Unlock 批准，以及对已批准的管理员或“系统设置”授权提示进行仅填充值的密码填充。"
+          >FacePass helps with narrow workflows on your own Mac: local recognition lock-screen unlock assist, independent iPhone StandBy Unlock approval, and value-only fill for approved administrator or System Settings authorization prompts.</p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="button button-primary" href="docs.html" data-en="Read the docs" data-zh="阅读文档">Read the docs</a>
             <a class="button button-secondary" href="https://github.com/Robert1124/FacePass" data-en="View on GitHub" data-zh="查看 GitHub">View on GitHub</a>
@@ -66,13 +66,13 @@
         </div>
         <div class="split-copy">
           <p
-            data-en="FacePass is a native macOS 13+ menu-bar app. It keeps recognition, conditions, password retrieval, and Accessibility actions local to the Mac."
-            data-zh="FacePass 是原生 macOS 13+ 菜单栏应用。识别、条件判断、密码读取和辅助功能操作都保留在本机。"
-          >FacePass is a native macOS 13+ menu-bar app. It keeps recognition, conditions, password retrieval, and Accessibility actions local to the Mac.</p>
+            data-en="FacePass is a native macOS 13+ menu-bar app with optional paired-iPhone approval. It keeps local recognition, provider routing, conditions, password retrieval, and Accessibility actions under local control."
+            data-zh="FacePass 是原生 macOS 13+ 菜单栏应用，并可选择使用已配对 iPhone 批准。它将本地识别、提供方路由、条件判断、密码读取和辅助功能操作都保留在本地控制下。"
+          >FacePass is a native macOS 13+ menu-bar app with optional paired-iPhone approval. It keeps local recognition, provider routing, conditions, password retrieval, and Accessibility actions under local control.</p>
           <p
-            data-en="It supports the macOS lock screen and approved administrator/System Settings authorization prompts only. Ordinary webpage or app password fields are not supported targets."
-            data-zh="它仅支持 macOS 锁屏和已批准的管理员/“系统设置”授权提示。普通网页或应用密码框不是支持目标。"
-          >It supports the macOS lock screen and approved administrator/System Settings authorization prompts only. Ordinary webpage or app password fields are not supported targets.</p>
+            data-en="Unlock Mode lets users route approved flows through local recognition, iPhone StandBy Unlock, both providers, or local recognition for lock-screen unlock plus iPhone approval for approved prompt fill. Ordinary webpage or app password fields are not supported targets."
+            data-zh="“解锁模式”让用户将已批准流程路由到本地识别、iPhone StandBy Unlock、两个提供方，或使用本地识别处理锁屏解锁并使用 iPhone 批准处理已批准提示填充。普通网页或应用密码框不是支持目标。"
+          >Unlock Mode lets users route approved flows through local recognition, iPhone StandBy Unlock, both providers, or local recognition for lock-screen unlock plus iPhone approval for approved prompt fill. Ordinary webpage or app password fields are not supported targets.</p>
         </div>
       </section>
 
@@ -98,9 +98,9 @@
             </div>
             <h3 data-en="Lock-screen only Return" data-zh="仅锁屏流程可按 Return">Lock-screen only Return</h3>
             <p
-              data-en="The lock-screen assist path may type the Keychain password and press Return only after locked-session checks and local recognition pass."
-              data-zh="锁屏辅助路径只有在锁定会话检查和本地识别通过后，才可输入钥匙串密码并按 Return。"
-            >The lock-screen assist path may type the Keychain password and press Return only after locked-session checks and local recognition pass.</p>
+              data-en="The lock-screen path may type the Keychain password and press Return only after locked-session checks and the configured approval provider policy pass."
+              data-zh="锁屏路径只有在锁定会话检查和已配置的批准提供方策略通过后，才可输入钥匙串密码并按 Return。"
+            >The lock-screen path may type the Keychain password and press Return only after locked-session checks and the configured approval provider policy pass.</p>
           </article>
           <article class="boundary-card">
             <div class="card-visual boundary-visual visual-value" aria-hidden="true">
@@ -192,9 +192,9 @@
         </div>
         <div class="feature-grid">
           <article><svg class="feature-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="6" y="8" width="20" height="15" rx="4"></rect><path d="M11 13h10M11 18h6"></path></svg><h3 data-en="Menu-bar app" data-zh="菜单栏应用">Menu-bar app</h3><p data-en="A lightweight background app with a full settings window." data-zh="轻量后台应用，配有完整设置窗口。">A lightweight background app with a full settings window.</p></article>
-          <article><svg class="feature-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="7" y="14" width="18" height="12" rx="3"></rect><path d="M11 14v-3a5 5 0 0 1 10 0v3M16 18v4"></path></svg><h3 data-en="Keychain storage" data-zh="钥匙串存储">Keychain storage</h3><p data-en="Password material is stored only through macOS Keychain." data-zh="密码材料仅通过 macOS 钥匙串存储。">Password material is stored only through macOS Keychain.</p></article>
-          <article><svg class="feature-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="9" cy="10" r="3"></circle><circle cx="23" cy="10" r="3"></circle><circle cx="16" cy="23" r="3"></circle><path d="M11.6 11.8 14.2 20M20.4 11.8 17.8 20"></path></svg><h3 data-en="Automation conditions" data-zh="自动化条件">Automation conditions</h3><p data-en="Automatic actions can require Wi-Fi, external display, or power-state conditions." data-zh="自动动作可要求 Wi-Fi、外接显示器或电源状态条件。">Automatic actions can require Wi-Fi, external display, or power-state conditions.</p></article>
-          <article><svg class="feature-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 8h16v16H8z"></path><path d="M12 16l3 3 6-7"></path></svg><h3 data-en="Prompt allowlist" data-zh="提示允许列表">Prompt allowlist</h3><p data-en="Authorization prompt detection stays narrow and context-based." data-zh="授权提示检测保持窄范围并基于上下文。">Authorization prompt detection stays narrow and context-based.</p></article>
+          <article><svg class="feature-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="12" r="6"></circle><path d="M8 27c1.7-5 4.4-7.5 8-7.5s6.3 2.5 8 7.5M10 12h12"></path></svg><h3 data-en="Local recognition unlock" data-zh="本地识别解锁">Local recognition unlock</h3><p data-en="Lock-screen assist can use short local recognition windows before the locked-session typing path." data-zh="锁屏辅助可在锁定会话输入路径之前使用短时本地识别窗口。">Lock-screen assist can use short local recognition windows before the locked-session typing path.</p></article>
+          <article><svg class="feature-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="10" y="4" width="12" height="24" rx="3"></rect><path d="M14 8h4M13 23h6M7 16h3M22 16h3"></path></svg><h3 data-en="iPhone StandBy Unlock" data-zh="iPhone StandBy Unlock">iPhone StandBy Unlock</h3><p data-en="StandBy, Live Activity, Dynamic Island, AppIntent, or static widget surfaces can send signed local requests without receiving the Mac password." data-zh="StandBy、Live Activity、Dynamic Island、AppIntent 或静态小组件界面可发送签名本地请求，而不会接收 Mac 密码。">StandBy, Live Activity, Dynamic Island, AppIntent, or static widget surfaces can send signed local requests without receiving the Mac password.</p></article>
+          <article><svg class="feature-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="10" r="3"></circle><circle cx="24" cy="10" r="3"></circle><circle cx="16" cy="24" r="3"></circle><path d="M10.7 11.8 14.4 21M21.3 11.8 17.6 21M11 10h10"></path></svg><h3 data-en="Unlock Mode routing" data-zh="解锁模式路由">Unlock Mode routing</h3><p data-en="Users choose local recognition, iPhone approval, both providers, or split routing by approved flow." data-zh="用户可按已批准流程选择本地识别、iPhone 批准、两个提供方或拆分路由。">Users choose local recognition, iPhone approval, both providers, or split routing by approved flow.</p></article>
         </div>
       </section>
 
@@ -209,9 +209,10 @@
         </div>
         <ul class="privacy-statements">
           <li data-en="No password values in files, logs, screenshots, or debug output." data-zh="密码值不会进入文件、日志、截图或调试输出。">No password values in files, logs, screenshots, or debug output.</li>
-          <li data-en="No upload of face data, passwords, unlock state, Wi-Fi details, display identifiers, or environment signals." data-zh="不会上传人脸数据、密码、解锁状态、Wi-Fi 详情、显示器标识或环境信号。">No upload of face data, passwords, unlock state, Wi-Fi details, display identifiers, or environment signals.</li>
-          <li data-en="Recognition templates are local encrypted data, not raw face photos or video frames." data-zh="识别模板是本地加密数据，不是原始人脸照片或视频帧。">Recognition templates are local encrypted data, not raw face photos or video frames.</li>
+          <li data-en="No upload of passwords, face data, raw camera frames, unlock state, Wi-Fi details, display identifiers, or environment signals." data-zh="不会上传密码、人脸数据、原始摄像头帧、解锁状态、Wi-Fi 详情、显示器标识或环境信号。">No upload of passwords, face data, raw camera frames, unlock state, Wi-Fi details, display identifiers, or environment signals.</li>
+          <li data-en="Local HTTP and Bonjour are limited to paired-device status, pairing, rediscovery, and signed StandBy Unlock requests." data-zh="本地 HTTP 和 Bonjour 仅限于已配对设备状态、配对、重新发现和签名 StandBy Unlock 请求。">Local HTTP and Bonjour are limited to paired-device status, pairing, rediscovery, and signed StandBy Unlock requests.</li>
         </ul>
+        <a class="inline-link" href="privacy.html" data-en="Read the full privacy policy" data-zh="阅读完整隐私政策">Read the full privacy policy</a>
       </section>
 
       <section class="section-light roadmap-section" id="roadmap" data-reveal>
@@ -224,8 +225,8 @@
 
       <section class="cta-section section-dark" data-reveal>
         <img src="assets/facepass-icon.png" alt="" width="82" height="82">
-        <h2 data-en="Build, inspect, and verify from source." data-zh="从源码构建、检查和验证。">Build, inspect, and verify from source.</h2>
-        <p data-en="FacePass is source-first. Review the code, safety model, and prompt boundaries before enabling sensitive flows." data-zh="FacePass 以源码优先。启用敏感流程前，请先审查代码、安全模型和提示边界。">FacePass is source-first. Review the code, safety model, and prompt boundaries before enabling sensitive flows.</p>
+        <h2 data-en="Download the DMG or build from source." data-zh="下载 DMG 或从源码构建。">Download the DMG or build from source.</h2>
+        <p data-en="Normal users should use the latest Developer ID-signed and notarized macOS DMG from GitHub Releases or the website download link when available. Developers can self-compile from source and verify locally. Those paths do not change the no-cloud, no-telemetry, no-upload, no-Mac-password-to-iPhone boundary." data-zh="普通用户应在可用时使用来自 GitHub Releases 或官网下载链接的最新 Developer ID 签名并公证的 macOS DMG。开发者可以从源码自行编译并在本地验证。这些路径不会改变无云、无遥测、不上传、不会将 Mac 密码传给 iPhone 的边界。">Normal users should use the latest Developer ID-signed and notarized macOS DMG from GitHub Releases or the website download link when available. Developers can self-compile from source and verify locally. Those paths do not change the no-cloud, no-telemetry, no-upload, no-Mac-password-to-iPhone boundary.</p>
         <div class="hero-actions">
           <a class="button button-primary" href="https://github.com/Robert1124/FacePass" data-en="Open GitHub" data-zh="打开 GitHub">Open GitHub</a>
           <a class="button button-secondary" href="mailto:contact@robertw.me" data-en="Email contact" data-zh="邮件联系">Email contact</a>

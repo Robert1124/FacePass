@@ -424,7 +424,8 @@ public struct AuthorizationPromptMetadata: Equatable {
 
         // Modern System Settings authorization sheets can be hosted by LocalAuthentication.
         if normalizedBundleIdentifier == "com.apple.localauthentication.uiagent" {
-            return hasSystemSettingsContextSignal && hasStrongAuthorizationPromptTextSignal
+            return (hasSystemSettingsContextSignal && hasStrongAuthorizationPromptTextSignal) ||
+                hasApplePasswordsUnlockContextSignal
         }
 
         return false
@@ -514,11 +515,42 @@ public struct AuthorizationPromptMetadata: Equatable {
         return contextFragments.contains { normalizedPromptText.contains($0) }
     }
 
+    private var hasApplePasswordsUnlockContextSignal: Bool {
+        let normalizedWindowTitle = windowTitle?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased() ?? ""
+        guard normalizedWindowTitle == "passwords" else {
+            return false
+        }
+
+        let normalizedPromptText = normalizedPromptTextFragments
+        return normalizedPromptText.range(
+            of: #"sign in with\s+"[^"]+"\."#,
+            options: .regularExpression
+        ) != nil &&
+            normalizedPromptText.range(
+                of: #"enter the computer account password for the user\s+"[^"]+"\."#,
+                options: .regularExpression
+            ) != nil
+    }
+
     private var normalizedContextText: String {
         ([windowTitle] + promptTextFragments)
             .compactMap { $0 }
             .map {
                 $0.trimmingCharacters(in: .whitespacesAndNewlines)
+                    .lowercased()
+            }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    private var normalizedPromptTextFragments: String {
+        promptTextFragments
+            .map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines)
+                    .replacingOccurrences(of: "\u{201C}", with: "\"")
+                    .replacingOccurrences(of: "\u{201D}", with: "\"")
                     .lowercased()
             }
             .filter { !$0.isEmpty }

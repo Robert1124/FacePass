@@ -35,6 +35,23 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         XCTAssertEqual(FaceRecognitionRuntimeController.defaultUnlockCaptureTimeout, 1)
     }
 
+    func testInitialStateSurfacesSavedTemplateFlagFromNonSensitiveProvider() {
+        var hasSavedTemplate = true
+        let controller = FaceRecognitionRuntimeController(
+            sampleCaptureService: QueueRecognitionSampleCapture(),
+            workflowFactory: RecordingRecognitionWorkflowFactory(),
+            userDefaults: userDefaults,
+            savedTemplateStateProvider: { hasSavedTemplate }
+        )
+
+        XCTAssertTrue(controller.state.hasSavedEnrollmentTemplate)
+
+        hasSavedTemplate = false
+        controller.refreshStoredTemplateState()
+
+        XCTAssertFalse(controller.state.hasSavedEnrollmentTemplate)
+    }
+
     func testMissingModelPathDoesNotStartCameraOrWorkflow() async {
         let capture = QueueRecognitionSampleCapture()
         let factory = RecordingRecognitionWorkflowFactory()
@@ -158,13 +175,12 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         XCTAssertEqual(factory.requestedModelURLs, [])
     }
 
-    func testEnrollmentSamplesAreBoundedToNewestRequiredSamples() async throws {
+    func testEnrollmentAutoSavesWhenRequiredSamplesAreCaptured() async throws {
         let modelURL = try makeModelFile(contents: Data("local-core-ml-model".utf8))
         let capture = QueueRecognitionSampleCapture(results: [
             .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.1), processedFrameCount: 1)),
             .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.2), processedFrameCount: 1)),
-            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.3), processedFrameCount: 1)),
-            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.4), processedFrameCount: 1))
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.3), processedFrameCount: 1))
         ])
         let workflow = RecordingRecognitionWorkflow()
         let controller = FaceRecognitionRuntimeController(
@@ -177,17 +193,14 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         await controller.captureEnrollmentSample()
         await controller.captureEnrollmentSample()
         await controller.captureEnrollmentSample()
-        await controller.captureEnrollmentSample()
-        await controller.saveEnrollment()
 
         XCTAssertEqual(capture.requestedTimeouts, [
-            FaceRecognitionRuntimeController.defaultCaptureTimeout,
             FaceRecognitionRuntimeController.defaultCaptureTimeout,
             FaceRecognitionRuntimeController.defaultCaptureTimeout,
             FaceRecognitionRuntimeController.defaultCaptureTimeout
         ])
         XCTAssertEqual(workflow.enrollSampleCounts, [3])
-        XCTAssertEqual(workflow.enrollSampleBoundsXValues, [[0.2, 0.3, 0.4]])
+        XCTAssertEqual(workflow.enrollSampleBoundsXValues, [[0.1, 0.2, 0.3]])
         XCTAssertEqual(controller.state.capturedEnrollmentSampleCount, 0)
     }
 
@@ -210,7 +223,6 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         await controller.captureEnrollmentSample()
         await controller.captureEnrollmentSample()
         await controller.captureEnrollmentSample()
-        await controller.saveEnrollment()
 
         XCTAssertEqual(workflow.enrollSampleCounts, [3])
         XCTAssertEqual(
@@ -222,6 +234,7 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
             controller.state.status,
             .enrollmentSaved(sampleCount: 3, modelVersion: workflow.modelVersion)
         )
+        XCTAssertTrue(controller.state.hasSavedEnrollmentTemplate)
         XCTAssertEqual(controller.state.lastModelChecksumSHA256, workflow.enrollChecksums.first)
     }
 
@@ -250,7 +263,6 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
             await controller.captureEnrollmentSample()
             await controller.captureEnrollmentSample()
             await controller.captureEnrollmentSample()
-            await controller.saveEnrollment()
 
             XCTAssertEqual(workflow.enrollSampleCounts, [3])
             XCTAssertEqual(
@@ -283,7 +295,6 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         await controller.captureEnrollmentSample()
         await controller.captureEnrollmentSample()
         await controller.captureEnrollmentSample()
-        await controller.saveEnrollment()
 
         XCTAssertEqual(controller.state.status, .enrollmentSaveFailed(reason: .unknown))
         XCTAssertTrue(controller.state.status.description.contains("unknown local enrollment error"))

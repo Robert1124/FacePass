@@ -15,6 +15,10 @@
       en: "FacePass Documentation",
       zh: "FacePass 文档"
     },
+    privacy: {
+      en: "FacePass Privacy Policy",
+      zh: "FacePass 隐私政策"
+    },
     roadmap: {
       en: "FacePass Roadmap",
       zh: "FacePass 路线图"

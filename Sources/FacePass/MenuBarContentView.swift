@@ -27,13 +27,13 @@ struct MenuBarContentView: View {
             Text("Stored in Keychain; not shown in FacePass.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Text("Unlocked-session fill is only for approved macOS administrator/System Settings authorization password prompts.")
+            Text("Unlocked-session fill is only for approved macOS administrator/System Settings authorization prompts and Apple Passwords unlock prompts.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Text("FacePass runs local recognition first, then fills the saved value only.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Text("It does not click OK/Continue/Login, submit, or press Return in unlocked admin/System Settings prompts.")
+            Text("It does not click Unlock/OK/Continue/Login, submit, or press Return in unlocked approved prompts.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Text("Lock-screen unlock is separate: when the session is locked and the opt-in path is enabled, FacePass may type the password and press Return after local recognition.")
@@ -64,7 +64,7 @@ struct MenuBarContentView: View {
                     .foregroundStyle(lastManualFillResult == .filled ? Color.green : Color.secondary)
             }
 
-            Button("Fill Admin Prompt Password") {
+            Button("Fill Approved Prompt Password") {
                 appStateManager.fillFocusedPasswordField()
             }
             .disabled(!appStateManager.isManualFillAvailable)
@@ -95,6 +95,11 @@ struct MenuBarContentView: View {
 
             Button("Settings...") {
                 NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                NSApp.activate(ignoringOtherApps: true)
+            }
+
+            Button("Check for Updates...") {
+                NSApp.sendAction(Selector(("checkForUpdates:")), to: nil, from: nil)
                 NSApp.activate(ignoringOtherApps: true)
             }
 
@@ -133,7 +138,7 @@ struct MenuBarContentView: View {
     private var manualFillHotkeyStatusText: String {
         switch appStateManager.manualFillHotkeyStatus.runtimeRegistrationState {
         case .registered:
-            "Hotkey is active for approved admin/System Settings prompts."
+            "Hotkey is active for approved admin/System Settings and Apple Passwords prompts."
         case .disabled:
             "Hotkey is disabled until Accessibility and password setup are ready."
         case .unavailable:
@@ -146,27 +151,29 @@ struct MenuBarContentView: View {
     private var facePresenceFillButtonTitle: String {
         appStateManager.isFacePresenceFillChecking
             ? "Running FacePass Camera Check..."
-            : "Run FacePass Recognition & Fill Admin Prompt"
+            : "Run FacePass Recognition & Fill Approved Prompt"
     }
 
     private func manualFillDisplayText(for result: ManualFillResult) -> String {
         switch result {
         case .filled:
-            "Admin/System Settings prompt value filled."
+            "Approved prompt value filled."
         case .missingPassword:
             "No password is configured."
         case .accessibilityPermissionDenied:
-            "Accessibility permission is required before filling admin/System Settings prompts."
+            "Accessibility permission is required before filling approved prompts."
         case .noFocusedPasswordField:
-            "No approved macOS administrator/System Settings authorization password prompt was found."
+            "No approved macOS administrator/System Settings authorization prompt or Apple Passwords unlock prompt was found."
         case .focusedPasswordFieldUnavailable:
-            "The approved authorization password prompt is unavailable."
+            "The approved prompt is unavailable."
         case .multipleApprovedPasswordFields:
-            "Multiple approved authorization password prompts were found."
+            "Multiple approved prompts were found."
         case .passwordReadFailed:
             "Unable to read password."
         case .recognitionRejected:
-            "Local FacePass recognition did not approve admin/System Settings prompt fill."
+            "Local FacePass recognition did not approve the prompt fill."
+        case .localRecognitionDisabled:
+            "Local FacePass recognition is disabled by the selected provider mode."
         }
     }
 
@@ -175,7 +182,7 @@ struct MenuBarContentView: View {
         case .checking:
             "Running local FacePass recognition..."
         case .filled:
-            "Local FacePass recognition approved; admin/System Settings prompt value filled."
+            "Local FacePass recognition approved; prompt value filled."
         case .cameraPermissionDenied:
             "Camera permission is required for local FacePass recognition."
         case .timedOut:

@@ -5,9 +5,14 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIGURATION="debug"
 MODE="run"
 APP_NAME="FacePass"
+APP_VERSION="${FACEPASS_APP_VERSION:-0.1.0}"
+BUNDLE_VERSION="${FACEPASS_BUNDLE_VERSION:-1}"
+SPARKLE_FEED_URL="https://facepass.app/updates/appcast.xml"
 APP_DIR="$ROOT_DIR/dist/$APP_NAME.app"
 CACHE_APP_DIR="${HOME}/Library/Caches/FacePass/dist/$APP_NAME.app"
 LEGACY_APP_PAYLOAD_DIR="$ROOT_DIR/dist/.$APP_NAME.bundle"
+LOCAL_DRY_RUN_OUTPUT_DIR="$ROOT_DIR/dist/local-release-dry-run"
+LOCAL_DRY_RUN_PACKAGE_PATH="$LOCAL_DRY_RUN_OUTPUT_DIR/$APP_NAME-$APP_VERSION.dry-run.zip"
 APP_ICON="$ROOT_DIR/Resources/FacePass.icns"
 MODEL_REVISION="af6d057c9b0ec4071d4c49c80e3539258798b609"
 BUNDLED_MODEL_SOURCE="$ROOT_DIR/Artifacts/Phase8/AuraFace-v1/$MODEL_REVISION/coreml-legacy/glintr100-legacy.mlmodel"
@@ -81,7 +86,13 @@ verify_physical_app_bundle() {
     exit 1
   fi
 
+  if [[ ! -d "$path/Contents/Frameworks/Sparkle.framework" ]]; then
+    echo "Sparkle framework missing at $path/Contents/Frameworks/Sparkle.framework" >&2
+    exit 1
+  fi
+
   [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$path/Contents/Info.plist")" == "FacePass" ]]
+  [[ "$(/usr/libexec/PlistBuddy -c 'Print :SUFeedURL' "$path/Contents/Info.plist")" == "$SPARKLE_FEED_URL" ]]
 }
 
 publish_physical_app() {
@@ -143,6 +154,47 @@ stage_bundled_model() {
   fi
 }
 
+stage_sparkle_framework() {
+  local framework_path=""
+
+  framework_path="$(find "$BIN_DIR" -name Sparkle.framework -type d -print -quit 2>/dev/null || true)"
+  if [[ -z "$framework_path" ]]; then
+    framework_path="$(find "$ROOT_DIR/.build/artifacts" -path '*macos*Sparkle.framework' -type d -print -quit 2>/dev/null || true)"
+  fi
+  if [[ -z "$framework_path" ]]; then
+    framework_path="$(find "$ROOT_DIR/.build" -name Sparkle.framework -type d -print -quit 2>/dev/null || true)"
+  fi
+
+  if [[ -z "$framework_path" ]]; then
+    echo "Sparkle.framework was not found in the SwiftPM build artifacts" >&2
+    exit 1
+  fi
+
+  mkdir -p "$STAGED_APP_DIR/Contents/Frameworks"
+  /usr/bin/ditto --norsrc "$framework_path" "$STAGED_APP_DIR/Contents/Frameworks/Sparkle.framework"
+  clean_xattrs "$STAGED_APP_DIR/Contents/Frameworks/Sparkle.framework"
+  sign_ad_hoc "$STAGED_APP_DIR/Contents/Frameworks/Sparkle.framework"
+}
+
+require_sparkle_public_key() {
+  if [[ -z "${FACEPASS_SPARKLE_PUBLIC_ED_KEY:-}" ]]; then
+    cat >&2 <<'EOF'
+FACEPASS_SPARKLE_PUBLIC_ED_KEY is required for release packaging.
+Do not commit Sparkle signing keys. Provide the public EdDSA key through the
+release environment, and keep the private key only in the signing environment.
+EOF
+    exit 1
+  fi
+}
+
+package_local_dry_run_archive() {
+  mkdir -p "$LOCAL_DRY_RUN_OUTPUT_DIR"
+  rm -f "$LOCAL_DRY_RUN_PACKAGE_PATH"
+  /usr/bin/ditto -c -k --keepParent --sequesterRsrc --zlibCompressionLevel 9 "$APP_DIR" "$LOCAL_DRY_RUN_PACKAGE_PATH"
+  echo "Packaged local dry-run archive: $LOCAL_DRY_RUN_PACKAGE_PATH"
+  echo "This archive is not a public release artifact. Formal releases use Developer ID signing, notarization, and script/package_release.sh."
+}
+
 publish_app() {
   rm -rf "$LEGACY_APP_PAYLOAD_DIR"
   publish_physical_app "$STAGED_APP_DIR" "$APP_DIR"
@@ -174,14 +226,25 @@ EOF
 
 usage() {
   cat <<'USAGE'
-Usage: script/build_and_run.sh [--debug] [--verify] [--logs] [--telemetry] [--help]
+Usage: script/build_and_run.sh [--debug] [--release] [--verify] [--package-dry-run] [--logs] [--telemetry] [--help]
 
 Modes:
   --debug      Build the debug executable, stage dist/FacePass.app, and launch it.
+  --release    Build release configuration, stage dist/FacePass.app, and verify without launching.
+               This is still a local ad-hoc-signed app until the GitHub release workflow
+               applies Developer ID signing and notarization.
   --verify     Build and stage the app, then verify bundle shape and Info.plist.
+  --package-dry-run
+               Build release configuration, stage and verify dist/FacePass.app, then create a local-only
+               ad-hoc-signed dist/local-release-dry-run/FacePass-$FACEPASS_APP_VERSION.dry-run.zip archive.
   --logs       Build, launch, then stream unified logs for the FacePass process.
   --telemetry  Report telemetry status. FacePass Phase 1 intentionally has none.
   --help       Show this help text.
+
+Release environment:
+  FACEPASS_APP_VERSION              Defaults to 0.1.0.
+  FACEPASS_BUNDLE_VERSION           Defaults to 1.
+  FACEPASS_SPARKLE_PUBLIC_ED_KEY    Required for --package-dry-run; optional for local debug/verify.
 USAGE
 }
 
@@ -191,9 +254,22 @@ while [[ $# -gt 0 ]]; do
       CONFIGURATION="debug"
       MODE="run"
       ;;
+    --release)
+      CONFIGURATION="release"
+      MODE="verify"
+      ;;
     --verify)
       CONFIGURATION="debug"
       MODE="verify"
+      ;;
+    --package)
+      echo "--package was renamed to --package-dry-run because local archives are not public release artifacts." >&2
+      echo "Use script/package_release.sh after Developer ID signing and notarization in the release workflow." >&2
+      exit 64
+      ;;
+    --package-dry-run)
+      CONFIGURATION="release"
+      MODE="package-dry-run"
       ;;
     --logs)
       CONFIGURATION="debug"
@@ -222,6 +298,10 @@ fi
 
 cd "$ROOT_DIR"
 
+if [[ "$MODE" == "package-dry-run" ]]; then
+  require_sparkle_public_key
+fi
+
 if [[ "$CONFIGURATION" == "release" ]]; then
   swift build -c release
   BIN_DIR="$(swift build -c release --show-bin-path)"
@@ -248,6 +328,7 @@ mkdir -p "$STAGED_APP_DIR/Contents/MacOS" "$STAGED_APP_DIR/Contents/Resources"
 
 cp "$BINARY_PATH" "$STAGED_APP_DIR/Contents/MacOS/$APP_NAME"
 cp "$APP_ICON" "$STAGED_APP_DIR/Contents/Resources/FacePass.icns"
+stage_sparkle_framework
 
 cat > "$STAGED_APP_DIR/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -276,11 +357,24 @@ cat > "$STAGED_APP_DIR/Contents/Info.plist" <<'PLIST'
   <string>13.0</string>
   <key>LSUIElement</key>
   <true/>
+  <key>NSBonjourServices</key>
+  <array>
+    <string>_facepass._tcp</string>
+  </array>
   <key>NSCameraUsageDescription</key>
   <string>FacePass uses the camera only for short local recognition, enrollment, and opt-in wake-triggered lock-screen checks. It does not keep the camera running or persist raw frames or photos.</string>
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>FacePass publishes a local Bonjour service and accepts signed iPhone StandBy Unlock pairing and unlock requests on your local network.</string>
 </dict>
 </plist>
 PLIST
+
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" "$STAGED_APP_DIR/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUNDLE_VERSION" "$STAGED_APP_DIR/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Add :SUFeedURL string $SPARKLE_FEED_URL" "$STAGED_APP_DIR/Contents/Info.plist"
+if [[ -n "${FACEPASS_SPARKLE_PUBLIC_ED_KEY:-}" ]]; then
+  /usr/libexec/PlistBuddy -c "Add :SUPublicEDKey string $FACEPASS_SPARKLE_PUBLIC_ED_KEY" "$STAGED_APP_DIR/Contents/Info.plist"
+fi
 
 plutil -lint "$STAGED_APP_DIR/Contents/Info.plist"
 
@@ -293,7 +387,7 @@ verify_strict_codesign "$STAGED_APP_DIR" >/dev/null
 
 publish_app
 
-if [[ "$MODE" == "verify" ]]; then
+if [[ "$MODE" == "verify" || "$MODE" == "package-dry-run" ]]; then
   clean_app_xattrs
   verify_physical_app_bundle "$APP_DIR"
   if [[ "$STRICT_VERIFIED_APP_DIR" == "$APP_DIR" ]]; then
@@ -302,6 +396,10 @@ if [[ "$MODE" == "verify" ]]; then
     verify_physical_app_bundle "$CACHE_APP_DIR"
     echo "Verified physical dist app bundle shape: $APP_DIR"
     echo "Verified strict codesign fallback app: $CACHE_APP_DIR"
+  fi
+  if [[ "$MODE" == "package-dry-run" ]]; then
+    /usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$APP_DIR/Contents/Info.plist" >/dev/null
+    package_local_dry_run_archive
   fi
   exit 0
 fi

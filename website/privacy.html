@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="FacePass privacy policy for the local macOS helper and iOS companion."
+    >
+    <title>FacePass Privacy Policy</title>
+    <link rel="icon" href="assets/facepass-icon.png">
+    <link rel="apple-touch-icon" href="assets/facepass-icon.png">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+  </head>
+  <body data-page="privacy">
+    <header class="site-header" data-reveal>
+      <a class="brand" href="index.html" aria-label="FacePass home">
+        <img src="assets/facepass-icon.png" alt="" width="34" height="34">
+        <span>FacePass</span>
+      </a>
+      <nav class="top-nav" aria-label="Primary">
+        <a href="index.html" data-nav="home" data-en="Home" data-zh="首页">Home</a>
+        <a href="docs.html" data-nav="docs" data-en="Documentation" data-zh="文档">Documentation</a>
+        <a href="roadmap.html" data-nav="roadmap" data-en="Roadmap" data-zh="路线图">Roadmap</a>
+        <a href="https://github.com/Robert1124/FacePass" data-en="GitHub" data-zh="GitHub">GitHub</a>
+      </nav>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-lang-set="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang-set="zh" aria-pressed="false">中</button>
+      </div>
+    </header>
+
+    <main>
+      <h1 class="sr-only" data-en="FacePass Privacy Policy" data-zh="FacePass 隐私政策">FacePass Privacy Policy</h1>
+      <section class="docs-layout docs-page section-light">
+        <aside class="docs-index" data-reveal>
+          <a href="#overview" data-en="Overview" data-zh="概览">Overview</a>
+          <a href="#data" data-en="Data Stored" data-zh="存储数据">Data Stored</a>
+          <a href="#camera" data-en="Camera" data-zh="摄像头">Camera</a>
+          <a href="#iphone" data-en="iOS Companion" data-zh="iOS 伴侣">iOS Companion</a>
+          <a href="#network" data-en="Local Network" data-zh="本地网络">Local Network</a>
+          <a href="#limits" data-en="Limits" data-zh="边界">Limits</a>
+          <a href="#contact" data-en="Contact" data-zh="联系">Contact</a>
+        </aside>
+
+        <div class="docs-content">
+          <article class="doc-panel" id="overview" data-reveal>
+            <p class="eyebrow" data-en="Privacy Policy" data-zh="隐私政策">Privacy Policy</p>
+            <h2 data-en="Local by design." data-zh="按本地优先设计。">Local by design.</h2>
+            <p data-en="FacePass is a macOS menu-bar helper with an optional iOS companion for paired local approval. It is designed for lock-screen assist and value-only fill for approved administrator/System Settings authorization prompts." data-zh="FacePass 是 macOS 菜单栏辅助工具，并可搭配可选的 iOS 伴侣用于已配对的本地批准。它只用于锁屏辅助，以及对已批准的管理员/“系统设置”授权提示进行仅填充值的处理。">FacePass is a macOS menu-bar helper with an optional iOS companion for paired local approval. It is designed for lock-screen assist and value-only fill for approved administrator/System Settings authorization prompts.</p>
+            <p data-en="FacePass does not provide Apple Face ID for Mac, system biometrics, or a replacement for macOS authentication. The Mac remains responsible for macOS authentication decisions." data-zh="FacePass 不提供 Mac 上的 Apple Face ID、系统生物识别，也不是 macOS 认证的替代品。macOS 认证决策仍由 Mac 负责。">FacePass does not provide Apple Face ID for Mac, system biometrics, or a replacement for macOS authentication. The Mac remains responsible for macOS authentication decisions.</p>
+            <ul class="check-list compact">
+              <li data-en="No cloud service, remote sync, external server, telemetry, analytics, or advertising tracking." data-zh="无云服务、远程同步、外部服务器、遥测、分析或广告跟踪。">No cloud service, remote sync, external server, telemetry, analytics, or advertising tracking.</li>
+              <li data-en="No upload of passwords, face data, face templates, camera frames, unlock state, prompt contents, Wi-Fi details, display identifiers, or condition signals." data-zh="不会上传密码、人脸数据、人脸模板、摄像头帧、解锁状态、提示内容、Wi-Fi 详情、显示器标识或条件信号。">No upload of passwords, face data, face templates, camera frames, unlock state, prompt contents, Wi-Fi details, display identifiers, or condition signals.</li>
+              <li data-en="No APNs, WebSocket, paid service, or cloud account is used for the iPhone StandBy Unlock path." data-zh="iPhone StandBy Unlock 路径不使用 APNs、WebSocket、付费服务或云账户。">No APNs, WebSocket, paid service, or cloud account is used for the iPhone StandBy Unlock path.</li>
+            </ul>
+          </article>
+
+          <article class="doc-panel" id="data" data-reveal>
+            <h2 data-en="Data Stored" data-zh="存储数据">Data Stored</h2>
+            <div class="doc-steps">
+              <section>
+                <h3 data-en="Mac password" data-zh="Mac 密码">Mac password</h3>
+                <p data-en="The Mac login password is stored only in macOS Keychain through FacePass password storage. It is not stored in plaintext files, UserDefaults, logs, screenshots, crash reports, analytics, or debug output." data-zh="Mac 登录密码只通过 FacePass 密码存储保存在 macOS 钥匙串中。它不会存储在明文文件、UserDefaults、日志、截图、崩溃报告、分析或调试输出中。">The Mac login password is stored only in macOS Keychain through FacePass password storage. It is not stored in plaintext files, UserDefaults, logs, screenshots, crash reports, analytics, or debug output.</p>
+              </section>
+              <section>
+                <h3 data-en="Face templates" data-zh="人脸模板">Face templates</h3>
+                <p data-en="Face recognition templates are stored locally as encrypted embeddings with required metadata such as model version. FacePass does not persist raw face photos, raw video frames, crops, or camera sample buffers." data-zh="人脸识别模板以加密嵌入和必要元数据（例如模型版本）的形式保存在本地。FacePass 不持久化原始人脸照片、原始视频帧、裁剪图或摄像头样本缓冲区。">Face recognition templates are stored locally as encrypted embeddings with required metadata such as model version. FacePass does not persist raw face photos, raw video frames, crops, or camera sample buffers.</p>
+              </section>
+              <section>
+                <h3 data-en="Pairing records" data-zh="配对记录">Pairing records</h3>
+                <p data-en="Paired iPhone trust records, public keys, device identifiers, display name, and durable counters are stored locally on the Mac in a separate Keychain-backed store. The iPhone stores only the local pairing information it needs to send signed requests to the paired Mac." data-zh="已配对 iPhone 的信任记录、公钥、设备标识符、显示名称和持久计数器会在 Mac 本地保存在单独的钥匙串支持存储中。iPhone 只保存向已配对 Mac 发送签名请求所需的本地配对信息。">Paired iPhone trust records, public keys, device identifiers, display name, and durable counters are stored locally on the Mac in a separate Keychain-backed store. The iPhone stores only the local pairing information it needs to send signed requests to the paired Mac.</p>
+              </section>
+              <section>
+                <h3 data-en="Endpoint cache and counters" data-zh="端点缓存与计数器">Endpoint cache and counters</h3>
+                <p data-en="The iOS companion may use UserDefaults for non-secret local endpoint cache data and request counter state needed for rediscovery and replay protection. The Mac password is never placed in UserDefaults." data-zh="iOS 伴侣可使用 UserDefaults 保存非机密的本地端点缓存数据，以及重新发现和重放保护所需的请求计数器状态。Mac 密码绝不会放入 UserDefaults。">The iOS companion may use UserDefaults for non-secret local endpoint cache data and request counter state needed for rediscovery and replay protection. The Mac password is never placed in UserDefaults.</p>
+              </section>
+            </div>
+          </article>
+
+          <article class="doc-panel" id="camera" data-reveal>
+            <h2 data-en="Camera and Recognition" data-zh="摄像头与识别">Camera and Recognition</h2>
+            <p data-en="The Mac camera is used only for short local recognition windows when a FacePass flow needs it. Camera processing stays on the Mac, and capture should stop after success, timeout, cancellation, or failure." data-zh="Mac 摄像头仅在 FacePass 流程需要时用于短时本地识别窗口。摄像头处理保留在 Mac 本机，并应在成功、超时、取消或失败后停止采集。">The Mac camera is used only for short local recognition windows when a FacePass flow needs it. Camera processing stays on the Mac, and capture should stop after success, timeout, cancellation, or failure.</p>
+            <p data-en="FacePass does not send Mac camera frames, face images, face templates, or recognition results to the iPhone companion or to any external service." data-zh="FacePass 不会将 Mac 摄像头帧、人脸图像、人脸模板或识别结果发送给 iPhone 伴侣或任何外部服务。">FacePass does not send Mac camera frames, face images, face templates, or recognition results to the iPhone companion or to any external service.</p>
+          </article>
+
+          <article class="doc-panel" id="iphone" data-reveal>
+            <h2 data-en="iOS Companion" data-zh="iOS 伴侣">iOS Companion</h2>
+            <p data-en="The iPhone companion sends signed local approval requests to the paired Mac. The iPhone never receives, stores, displays, logs, or transmits the Mac password." data-zh="iPhone 伴侣会向已配对的 Mac 发送签名的本地批准请求。iPhone 绝不会接收、存储、显示、记录或传输 Mac 密码。">The iPhone companion sends signed local approval requests to the paired Mac. The iPhone never receives, stores, displays, logs, or transmits the Mac password.</p>
+            <p data-en="WidgetKit Live Activity, Dynamic Island, AppIntent, and optional static widget surfaces are treated only as local request triggers. They do not transfer the Mac password, Mac face data, or Mac camera data." data-zh="WidgetKit Live Activity、Dynamic Island、AppIntent 和可选静态小组件界面仅作为本地请求触发入口。它们不会传输 Mac 密码、Mac 人脸数据或 Mac 摄像头数据。">WidgetKit Live Activity, Dynamic Island, AppIntent, and optional static widget surfaces are treated only as local request triggers. They do not transfer the Mac password, Mac face data, or Mac camera data.</p>
+            <p data-en="The Mac accepts only signed requests from the paired iPhone after checking the paired public key, timestamp, replay cache, durable counter, iPhone device ID, Mac device ID, requested action, enabled state, provider policy, current Mac state, password configuration, permissions, and conditions." data-zh="Mac 只会在检查配对公钥、时间戳、重放缓存、持久计数器、iPhone 设备 ID、Mac 设备 ID、请求动作、启用状态、提供方策略、当前 Mac 状态、密码配置、权限和条件后，接受来自已配对 iPhone 的签名请求。">The Mac accepts only signed requests from the paired iPhone after checking the paired public key, timestamp, replay cache, durable counter, iPhone device ID, Mac device ID, requested action, enabled state, provider policy, current Mac state, password configuration, permissions, and conditions.</p>
+          </article>
+
+          <article class="doc-panel" id="network" data-reveal>
+            <h2 data-en="Local Network" data-zh="本地网络">Local Network</h2>
+            <p data-en="FacePass uses local HTTP and Bonjour only for paired-device status, pairing, rediscovery, and StandBy Unlock requests on the local network. The endpoint scope is limited to /v1/status, /v1/pair, and /v1/standby-unlock." data-zh="FacePass 仅使用本地 HTTP 和 Bonjour 在本地网络上处理已配对设备状态、配对、重新发现和 StandBy Unlock 请求。端点范围限制为 /v1/status、/v1/pair 和 /v1/standby-unlock。">FacePass uses local HTTP and Bonjour only for paired-device status, pairing, rediscovery, and StandBy Unlock requests on the local network. The endpoint scope is limited to /v1/status, /v1/pair, and /v1/standby-unlock.</p>
+            <p data-en="Local Network permission may be requested so the iPhone companion can find and reach the paired Mac directly. FacePass does not use cloud routing, APNs, telemetry, analytics, WebSockets, or third-party relay servers." data-zh="系统可能会请求“本地网络”权限，以便 iPhone 伴侣直接发现并连接已配对的 Mac。FacePass 不使用云路由、APNs、遥测、分析、WebSocket 或第三方中继服务器。">Local Network permission may be requested so the iPhone companion can find and reach the paired Mac directly. FacePass does not use cloud routing, APNs, telemetry, analytics, WebSockets, or third-party relay servers.</p>
+          </article>
+
+          <article class="doc-panel" id="limits" data-reveal>
+            <h2 data-en="Scope Limits" data-zh="范围边界">Scope Limits</h2>
+            <ul class="check-list compact">
+              <li data-en="FacePass supports the macOS lock screen and approved administrator/System Settings authorization prompts only." data-zh="FacePass 仅支持 macOS 锁屏和已批准的管理员/“系统设置”授权提示。">FacePass supports the macOS lock screen and approved administrator/System Settings authorization prompts only.</li>
+              <li data-en="Ordinary website and app password fields are not supported targets." data-zh="普通网站和应用密码框不是支持目标。">Ordinary website and app password fields are not supported targets.</li>
+              <li data-en="Administrator/System Settings prompt fill is value-only and does not click OK, Continue, Modify Settings, Login, submit, or press Return." data-zh="管理员/“系统设置”提示填充仅填充值，不会点击 OK、Continue、Modify Settings、Login、提交，也不会按 Return。">Administrator/System Settings prompt fill is value-only and does not click OK, Continue, Modify Settings, Login, submit, or press Return.</li>
+              <li data-en="Only the narrowly scoped lock-screen path may press Return, and only after locked-session checks and the configured approval policy pass." data-zh="只有窄范围的锁屏路径可以按 Return，并且必须在锁定会话检查和已配置的批准策略通过后才可执行。">Only the narrowly scoped lock-screen path may press Return, and only after locked-session checks and the configured approval policy pass.</li>
+            </ul>
+          </article>
+
+          <article class="doc-panel" id="contact" data-reveal>
+            <h2 data-en="Contact" data-zh="联系">Contact</h2>
+            <p data-en="For privacy questions, email contact@robertw.me or review the source repository." data-zh="如有隐私问题，请发送邮件至 contact@robertw.me，或查看源代码仓库。">For privacy questions, email contact@robertw.me or review the source repository.</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="mailto:contact@robertw.me" data-en="Email contact" data-zh="邮件联系">Email contact</a>
+              <a class="button button-secondary" href="https://github.com/Robert1124/FacePass" data-en="Open GitHub" data-zh="打开 GitHub">Open GitHub</a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>FacePass</span>
+      <span data-en="Privacy policy for local macOS and iOS companion flows." data-zh="本地 macOS 与 iOS 伴侣流程隐私政策。">Privacy policy for local macOS and iOS companion flows.</span>
+    </footer>
+  </body>
+</html>
