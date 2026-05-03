@@ -53,6 +53,28 @@ require_bundle_value() {
   fi
 }
 
+require_release_signature() {
+  local codesign_info spctl_output
+  codesign_info="$(codesign -dv --verbose=4 "$APP_DIR" 2>&1)"
+  if grep -q '^Signature=adhoc$' <<< "$codesign_info"; then
+    echo "Release packaging requires a Developer ID Application signature. Use --allow-ad-hoc only for local dry runs." >&2
+    exit 1
+  fi
+
+  if grep -q '^Authority=Developer ID Application:' <<< "$codesign_info"; then
+    return
+  fi
+
+  if spctl_output="$(spctl --assess --type execute --verbose=4 "$APP_DIR" 2>&1)"; then
+    if grep -Eq 'source=(Notarized )?Developer ID' <<< "$spctl_output"; then
+      return
+    fi
+  fi
+
+  echo "Release packaging requires a Developer ID Application signature. Use --allow-ad-hoc only for local dry runs." >&2
+  exit 1
+}
+
 if [[ ! -d "$APP_DIR" ]]; then
   echo "Staged app not found at $APP_DIR" >&2
   exit 1
@@ -69,10 +91,7 @@ require_bundle_value "SUFeedURL" "https://facepass.app/updates/appcast.xml"
 codesign --verify --strict --deep "$APP_DIR"
 
 if [[ "$ALLOW_AD_HOC" != "true" ]]; then
-  if ! codesign -dv "$APP_DIR" 2>&1 | grep -q 'Authority=Developer ID Application:'; then
-    echo "Release packaging requires a Developer ID Application signature. Use --allow-ad-hoc only for local dry runs." >&2
-    exit 1
-  fi
+  require_release_signature
 fi
 
 mkdir -p "$OUTPUT_DIR"

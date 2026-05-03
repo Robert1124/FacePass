@@ -89,6 +89,8 @@ The expected official GitHub Release artifacts are `FacePass-<version>.dmg` and 
 
 Because Sparkle bundles helper code inside `Sparkle.framework`, the Actions release workflow re-signs Sparkle's nested `Installer.xpc`, `Downloader.xpc`, `Autoupdate`, and `Updater.app` with the Developer ID Application identity before signing the framework and app. If Apple notarization returns `Invalid`, the workflow prints the Apple notary log before failing so the rejected bundle path is visible in the Actions output.
 
+`script/package_release.sh` rejects ad-hoc signatures for formal packages. For signed release builds, it accepts either an explicit Developer ID Application authority from `codesign` or a Gatekeeper assessment whose source is Developer ID or Notarized Developer ID.
+
 Required credentials and repository secrets should be documented and configured by name only, never by value. The current workflow expects:
 
 - `FACEPASS_SPARKLE_PUBLIC_ED_KEY`
