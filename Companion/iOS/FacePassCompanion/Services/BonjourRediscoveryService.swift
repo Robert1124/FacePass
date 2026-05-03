@@ -138,42 +138,10 @@ private final class BonjourEndpointLookup: NSObject, NetServiceBrowserDelegate, 
     }
 
     private func resolvedHost(from service: NetService) -> String? {
-        if let hostName = service.hostName, !hostName.isEmpty {
-            return hostName.hasSuffix(".") ? String(hostName.dropLast()) : hostName
-        }
-
-        for address in service.addresses ?? [] {
-            if let host = numericHost(from: address) {
-                return host
-            }
-        }
-
-        return nil
-    }
-
-    private func numericHost(from address: Data) -> String? {
-        address.withUnsafeBytes { rawBuffer in
-            guard let baseAddress = rawBuffer.bindMemory(to: sockaddr.self).baseAddress else {
-                return nil
-            }
-
-            var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-            let result = getnameinfo(
-                baseAddress,
-                socklen_t(address.count),
-                &hostBuffer,
-                socklen_t(hostBuffer.count),
-                nil,
-                0,
-                NI_NUMERICHOST
-            )
-
-            guard result == 0 else {
-                return nil
-            }
-            let bytes = hostBuffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }
-            return String(decoding: bytes, as: UTF8.self)
-        }
+        BonjourResolvedEndpointHostSelector.resolvedHost(
+            hostName: service.hostName,
+            addresses: service.addresses ?? []
+        )
     }
 
     private func finish(_ result: Result<MacEndpoint, Error>) {
@@ -193,5 +161,69 @@ private final class BonjourEndpointLookup: NSObject, NetServiceBrowserDelegate, 
             continuation?.resume(throwing: error)
         }
         continuation = nil
+    }
+}
+
+enum BonjourResolvedEndpointHostSelector {
+    static func resolvedHost(hostName: String?, addresses: [Data]) -> String? {
+        let numericHosts = addresses.compactMap(numericHost)
+
+        if let host = numericHosts.first(where: isIPv4Host) {
+            return host
+        }
+
+        if let host = numericHosts.first(where: { !isLinkLocalIPv6Host($0) }) {
+            return host
+        }
+
+        if let hostName, !hostName.isEmpty {
+            return hostName.hasSuffix(".") ? String(hostName.dropLast()) : hostName
+        }
+
+        return numericHosts.first
+    }
+
+    private static func numericHost(from address: Data) -> String? {
+        address.withUnsafeBytes { rawBuffer in
+            guard let baseAddress = rawBuffer.bindMemory(to: sockaddr.self).baseAddress else {
+                return nil
+            }
+
+            var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+            let result = getnameinfo(
+                baseAddress,
+                socklen_t(address.count),
+                &hostBuffer,
+                socklen_t(hostBuffer.count),
+                nil,
+                0,
+                NI_NUMERICHOST
+            )
+
+            guard result == 0 else {
+                return nil
+            }
+
+            let bytes = hostBuffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }
+            return String(decoding: bytes, as: UTF8.self)
+        }
+    }
+
+    private static func isIPv4Host(_ host: String) -> Bool {
+        let parts = host.split(separator: ".")
+        guard parts.count == 4 else {
+            return false
+        }
+
+        return parts.allSatisfy { part in
+            guard let value = Int(part) else {
+                return false
+            }
+            return value >= 0 && value <= 255
+        }
+    }
+
+    private static func isLinkLocalIPv6Host(_ host: String) -> Bool {
+        host.lowercased().hasPrefix("fe80:")
     }
 }

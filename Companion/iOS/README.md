@@ -36,7 +36,7 @@ The iOS companion also excludes:
 5. From StandBy, the FacePass Live Activity, the optional FacePass Unlock widget, a Shortcut, or the app, the user requests `unlock_screen`.
 6. `StandByUnlockIntent` requires local device authentication on the iPhone before any signed unlock request is sent.
 7. The iPhone signs a canonical request payload and posts it to the Mac local endpoint.
-8. If the cached endpoint fails, the iPhone performs a short Bonjour rediscovery for the paired Mac and retries once.
+8. If the cached endpoint fails, the iPhone performs a short Bonjour rediscovery for the paired Mac, prefers the resolved numeric local address over the Bonjour hostname when available, and retries once.
 
 The current macOS workspace provides the StandBy HTTP router/server, pairing controller, and request verifier for `/v1/status`, `/v1/pair`, and `/v1/standby-unlock`.
 

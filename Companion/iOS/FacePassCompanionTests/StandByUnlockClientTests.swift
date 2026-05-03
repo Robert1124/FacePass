@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import XCTest
 @testable import FacePassCompanionCore
@@ -176,6 +177,17 @@ final class StandByUnlockClientTests: XCTestCase {
         XCTAssertEqual(cache.savedMacs.last?.cachedEndpoint, MacEndpoint(host: "127.0.0.1", port: 45001, scheme: "http"))
         XCTAssertNotNil(cache.savedMacs.last?.lastSeenAt)
     }
+
+    func testBonjourRediscoveryPrefersResolvedIPv4AddressOverLocalHostname() throws {
+        let host = BonjourResolvedEndpointHostSelector.resolvedHost(
+            hostName: "Yiwens-MacBook-Pro-14.local.",
+            addresses: [
+                ipv4SocketAddressData("192.168.4.204")
+            ]
+        )
+
+        XCTAssertEqual(host, "192.168.4.204")
+    }
 }
 
 private func makePairingPayload(localEndpoint: MacEndpoint?) -> PairingQRCodePayload {
@@ -307,4 +319,14 @@ private func standbyClientDate(_ value: String) -> Date {
         fatalError("Invalid test date: \(value)")
     }
     return date
+}
+
+private func ipv4SocketAddressData(_ host: String, port: UInt16 = 0) -> Data {
+    var address = sockaddr_in()
+    address.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+    address.sin_family = sa_family_t(AF_INET)
+    address.sin_port = in_port_t(port).bigEndian
+    inet_pton(AF_INET, host, &address.sin_addr)
+
+    return withUnsafeBytes(of: &address) { Data($0) }
 }
