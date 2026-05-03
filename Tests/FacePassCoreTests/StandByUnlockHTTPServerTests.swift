@@ -154,6 +154,35 @@ final class StandByUnlockHTTPServerTests: XCTestCase {
         XCTAssertFalse(response.bodyString.localizedCaseInsensitiveContains("password"))
     }
 
+    func testPreferredLANIPv4AddressUsesDefaultRouteBeforeVirtualPrivateInterface() {
+        let candidates = [
+            StandByLocalIPv4Address(interfaceName: "feth4942", host: "192.168.192.56"),
+            StandByLocalIPv4Address(interfaceName: "en0", host: "192.168.4.204"),
+            StandByLocalIPv4Address(interfaceName: "en10", host: "192.168.4.215")
+        ]
+
+        let host = StandByLocalEndpointSelector.preferredHost(
+            from: candidates,
+            defaultRouteInterface: "en10"
+        )
+
+        XCTAssertEqual(host, "192.168.4.215")
+    }
+
+    func testPreferredLANIPv4AddressFallsBackToPhysicalPrivateInterfaceBeforeVirtualInterface() {
+        let candidates = [
+            StandByLocalIPv4Address(interfaceName: "feth4942", host: "192.168.192.56"),
+            StandByLocalIPv4Address(interfaceName: "en0", host: "192.168.4.204")
+        ]
+
+        let host = StandByLocalEndpointSelector.preferredHost(
+            from: candidates,
+            defaultRouteInterface: nil
+        )
+
+        XCTAssertEqual(host, "192.168.4.204")
+    }
+
     private func makePairingController(
         pairedDeviceStore: InMemoryStandByHTTPPairedDeviceStore = InMemoryStandByHTTPPairedDeviceStore()
     ) -> StandByUnlockPairingController {

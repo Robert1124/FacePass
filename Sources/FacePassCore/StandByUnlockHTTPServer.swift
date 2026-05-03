@@ -1,6 +1,7 @@
 import Foundation
 import Darwin
 import Network
+import SystemConfiguration
 
 public struct StandByHTTPServerRequest: Equatable {
     public let method: String
@@ -483,37 +484,53 @@ public final class StandByUnlockHTTPServer {
     }
 
     private static func preferredLANIPv4Address() -> String? {
+        StandByLocalEndpointSelector.preferredHost(
+            from: localIPv4AddressCandidates(),
+            defaultRouteInterface: defaultRouteInterfaceName()
+        )
+    }
+
+    private static func localIPv4AddressCandidates() -> [StandByLocalIPv4Address] {
         var interfaces: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&interfaces) == 0, let firstInterface = interfaces else {
-            return nil
+            return []
         }
         defer { freeifaddrs(interfaces) }
 
-        var fallbackAddress: String?
+        var candidates: [StandByLocalIPv4Address] = []
         var cursor: UnsafeMutablePointer<ifaddrs>? = firstInterface
         while let current = cursor {
             defer { cursor = current.pointee.ifa_next }
 
             let flags = current.pointee.ifa_flags
-            guard flags & UInt32(IFF_UP) != 0,
-                  flags & UInt32(IFF_LOOPBACK) == 0,
-                  let address = current.pointee.ifa_addr,
+            guard let address = current.pointee.ifa_addr,
                   Int32(address.pointee.sa_family) == AF_INET,
-                  let host = numericIPv4Host(from: address),
-                  !host.hasPrefix("127.") else {
+                  let host = numericIPv4Host(from: address) else {
                 continue
             }
 
-            if isPrivateLANIPv4(host) {
-                return host
-            }
-
-            if fallbackAddress == nil, !host.hasPrefix("169.254.") {
-                fallbackAddress = host
-            }
+            let interfaceName = String(cString: current.pointee.ifa_name)
+            candidates.append(StandByLocalIPv4Address(
+                interfaceName: interfaceName,
+                host: host,
+                isUp: flags & UInt32(IFF_UP) != 0,
+                isLoopback: flags & UInt32(IFF_LOOPBACK) != 0,
+                isPointToPoint: flags & UInt32(IFF_POINTOPOINT) != 0
+            ))
         }
 
-        return fallbackAddress
+        return candidates
+    }
+
+    private static func defaultRouteInterfaceName() -> String? {
+        guard let globalIPv4 = SCDynamicStoreCopyValue(
+            nil,
+            "State:/Network/Global/IPv4" as CFString
+        ) as? [String: Any] else {
+            return nil
+        }
+
+        return globalIPv4["PrimaryInterface"] as? String
     }
 
     private static func numericIPv4Host(from address: UnsafePointer<sockaddr>) -> String? {
@@ -534,6 +551,88 @@ public final class StandByUnlockHTTPServer {
 
         let bytes = hostBuffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }
         return String(decoding: bytes, as: UTF8.self)
+    }
+
+}
+
+struct StandByLocalIPv4Address: Equatable {
+    let interfaceName: String
+    let host: String
+    let isUp: Bool
+    let isLoopback: Bool
+    let isPointToPoint: Bool
+
+    init(
+        interfaceName: String,
+        host: String,
+        isUp: Bool = true,
+        isLoopback: Bool = false,
+        isPointToPoint: Bool = false
+    ) {
+        self.interfaceName = interfaceName
+        self.host = host
+        self.isUp = isUp
+        self.isLoopback = isLoopback
+        self.isPointToPoint = isPointToPoint
+    }
+}
+
+enum StandByLocalEndpointSelector {
+    static func preferredHost(
+        from candidates: [StandByLocalIPv4Address],
+        defaultRouteInterface: String?
+    ) -> String? {
+        let usableCandidates = candidates.filter(isUsable)
+
+        if let defaultRouteInterface {
+            let defaultRouteCandidates = usableCandidates.filter {
+                $0.interfaceName == defaultRouteInterface
+            }
+            if let host = defaultRouteCandidates.first(where: { isPrivateLANIPv4($0.host) })?.host {
+                return host
+            }
+            if let host = defaultRouteCandidates.first(where: { !isLinkLocalIPv4($0.host) })?.host {
+                return host
+            }
+        }
+
+        if let host = usableCandidates.first(where: {
+            isPreferredPhysicalInterface($0.interfaceName) && isPrivateLANIPv4($0.host)
+        })?.host {
+            return host
+        }
+
+        if let host = usableCandidates.first(where: {
+            !isLikelyVirtualInterface($0.interfaceName) && isPrivateLANIPv4($0.host)
+        })?.host {
+            return host
+        }
+
+        if let host = usableCandidates.first(where: { isPrivateLANIPv4($0.host) })?.host {
+            return host
+        }
+
+        return usableCandidates.first(where: { !isLinkLocalIPv4($0.host) })?.host
+    }
+
+    private static func isUsable(_ candidate: StandByLocalIPv4Address) -> Bool {
+        candidate.isUp &&
+            !candidate.isLoopback &&
+            !candidate.isPointToPoint &&
+            !candidate.host.hasPrefix("127.")
+    }
+
+    private static func isPreferredPhysicalInterface(_ interfaceName: String) -> Bool {
+        interfaceName.hasPrefix("en") || interfaceName.hasPrefix("eth")
+    }
+
+    private static func isLikelyVirtualInterface(_ interfaceName: String) -> Bool {
+        let virtualPrefixes = ["awdl", "bridge", "feth", "llw", "utun", "vnic", "vmnet"]
+        return virtualPrefixes.contains { interfaceName.hasPrefix($0) }
+    }
+
+    private static func isLinkLocalIPv4(_ host: String) -> Bool {
+        host.hasPrefix("169.254.")
     }
 
     private static func isPrivateLANIPv4(_ host: String) -> Bool {

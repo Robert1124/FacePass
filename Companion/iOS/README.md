@@ -66,6 +66,8 @@ The Mac pairing QR payload uses type `facepass_standby_pairing` and includes onl
 
 The QR payload must not include Mac passwords, private keys, raw public key material, unlock request IDs, or face data. Clients should try the optional local endpoint for direct `/v1/pair` first when present, then fall back to Bonjour metadata for local discovery if direct pairing is unreachable.
 
+When the Mac includes `localEndpoint`, it should choose a LAN-reachable address from the default-route or physical network interface before virtual interfaces such as `feth`, `utun`, `bridge`, `vnic`, or `vmnet`. This keeps QR pairing from advertising a private virtual address that the iPhone cannot reach on the Wi-Fi/local network.
+
 Pairing registration posts to `/v1/pair` with the Mac `StandByIPhonePairingRegistration` JSON shape:
 
 - `oneTimeToken`
@@ -145,6 +147,7 @@ The iOS companion has moved past a non-buildable scaffold: it now has an Xcode p
 Current verified status:
 
 - iOS core/app/widget sources pass direct iOS simulator `swiftc` typecheck.
+- The iOS Xcode project uses automatic Apple Developer signing with team `WDAN6HW5VM` across the app, core framework, widget extension, and test target build configurations.
 - Root `swift test` passes.
 - `xcodebuild -project Companion/iOS/FacePassCompanion.xcodeproj -scheme FacePassCompanion -destination 'generic/platform=iOS' -sdk iphoneos CODE_SIGNING_ALLOWED=NO build` passes.
 - `xcodebuild test -project Companion/iOS/FacePassCompanion.xcodeproj -scheme FacePassCompanion -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.4.1' CODE_SIGNING_ALLOWED=NO` passes.
