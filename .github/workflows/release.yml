@@ -282,6 +282,19 @@ jobs:
             --strict \
             --release-package "dist/release/FacePass-${RELEASE_VERSION#v}.dmg"
 
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release_id="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_VERSION}" --jq '.id')"
+          if [[ -z "$release_id" || "$release_id" == "null" ]]; then
+            echo "Could not resolve GitHub Release id for ${RELEASE_VERSION}." >&2
+            exit 1
+          fi
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${release_id}" -F draft=false >/dev/null
+
       - name: Publish appcast to website source
         shell: bash
         run: |
