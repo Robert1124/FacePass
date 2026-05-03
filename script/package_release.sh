@@ -75,6 +75,28 @@ require_release_signature() {
   exit 1
 }
 
+require_entitlement_true() {
+  local bundle_path="$1"
+  local entitlement_key="$2"
+  local entitlements_plist
+
+  entitlements_plist="$(mktemp "${TMPDIR:-/tmp}/facepass-entitlements.XXXXXX")"
+  if ! codesign -d --entitlements :- "$bundle_path" >"$entitlements_plist" 2>/dev/null; then
+    rm -f "$entitlements_plist"
+    echo "Could not inspect code signing entitlements for $bundle_path." >&2
+    exit 1
+  fi
+
+  local actual_value
+  actual_value="$(/usr/libexec/PlistBuddy -c "Print :$entitlement_key" "$entitlements_plist" 2>/dev/null || true)"
+  rm -f "$entitlements_plist"
+
+  if [[ "$actual_value" != "true" ]]; then
+    echo "$bundle_path is missing required entitlement: $entitlement_key=true" >&2
+    exit 1
+  fi
+}
+
 if [[ ! -d "$APP_DIR" ]]; then
   echo "Staged app not found at $APP_DIR" >&2
   exit 1
@@ -94,6 +116,7 @@ require_bundle_value "SUFeedURL" "https://facepass.robertw.me/updates/appcast.xm
 /usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$APP_DIR/Contents/Info.plist" >/dev/null
 
 codesign --verify --strict --deep "$APP_DIR"
+require_entitlement_true "$APP_DIR" "com.apple.security.device.camera"
 
 if [[ "$ALLOW_AD_HOC" != "true" ]]; then
   require_release_signature

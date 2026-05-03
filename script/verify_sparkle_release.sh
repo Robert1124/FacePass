@@ -59,6 +59,24 @@ validate_xml() {
   fi
 }
 
+require_entitlement_true() {
+  local bundle_path="$1"
+  local entitlement_key="$2"
+  local entitlements_plist
+
+  entitlements_plist="$(mktemp "${TMPDIR:-/tmp}/facepass-entitlements.XXXXXX")"
+  if ! codesign -d --entitlements :- "$bundle_path" >"$entitlements_plist" 2>/dev/null; then
+    rm -f "$entitlements_plist"
+    fail "Could not inspect code signing entitlements for $bundle_path."
+  fi
+
+  local actual_value
+  actual_value="$(/usr/libexec/PlistBuddy -c "Print :$entitlement_key" "$entitlements_plist" 2>/dev/null || true)"
+  rm -f "$entitlements_plist"
+
+  [[ "$actual_value" == "true" ]] || fail "$bundle_path is missing required entitlement: $entitlement_key=true"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --app)
@@ -105,6 +123,7 @@ cd "$ROOT_DIR"
 require_file "Package.swift"
 require_file "Sources/FacePass/FacePassApp.swift"
 require_file "Sources/FacePass/MenuBarContentView.swift"
+require_file "Resources/FacePass.entitlements"
 require_file "script/build_and_run.sh"
 
 if ! grep -Eq 'Sparkle|sparkle-project/Sparkle' Package.swift; then
@@ -117,6 +136,14 @@ fi
 
 if ! grep -Fq "$EXPECTED_FEED_URL" script/build_and_run.sh Sources/FacePass/*.swift; then
   fail "Expected Sparkle feed URL was not found in app/build sources: $EXPECTED_FEED_URL"
+fi
+
+if ! grep -Fq "com.apple.security.device.camera" Resources/FacePass.entitlements; then
+  fail "Resources/FacePass.entitlements does not declare the required camera entitlement."
+fi
+
+if ! grep -Fq "FacePass.entitlements" script/build_and_run.sh; then
+  fail "script/build_and_run.sh does not sign the staged app with FacePass.entitlements."
 fi
 
 if ! grep -Fq "SUFeedURL" script/build_and_run.sh; then
@@ -151,6 +178,7 @@ if [[ -n "$APP_BUNDLE_PATH" ]]; then
   if ! otool -l "$APP_BUNDLE_PATH/Contents/MacOS/FacePass" | grep -Fq 'path @executable_path/../Frameworks '; then
     fail "FacePass executable is missing @executable_path/../Frameworks runtime search path for bundled Sparkle.framework."
   fi
+  require_entitlement_true "$APP_BUNDLE_PATH" "com.apple.security.device.camera"
 else
   if [[ "$REQUIRE_APP" == "true" ]]; then
     fail "Strict release verification requires --app /path/to/FacePass.app."
@@ -191,6 +219,9 @@ if [[ -f ".github/workflows/release.yml" ]]; then
   fi
   if ! grep -Fq -- 'gh release edit "$RELEASE_VERSION" --draft=false' ".github/workflows/release.yml"; then
     fail "release.yml does not publish the draft GitHub Release after the release gate passes."
+  fi
+  if ! grep -Fq "FacePass.entitlements" ".github/workflows/release.yml"; then
+    fail "release.yml does not Developer ID sign the app with FacePass.entitlements."
   fi
 else
   if [[ "$EXPECT_WORKFLOW" == "true" ]]; then

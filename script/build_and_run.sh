@@ -14,6 +14,7 @@ LEGACY_APP_PAYLOAD_DIR="$ROOT_DIR/dist/.$APP_NAME.bundle"
 LOCAL_DRY_RUN_OUTPUT_DIR="$ROOT_DIR/dist/local-release-dry-run"
 LOCAL_DRY_RUN_PACKAGE_PATH="$LOCAL_DRY_RUN_OUTPUT_DIR/$APP_NAME-$APP_VERSION.dry-run.zip"
 APP_ICON="$ROOT_DIR/Resources/FacePass.icns"
+APP_ENTITLEMENTS="$ROOT_DIR/Resources/FacePass.entitlements"
 MODEL_REVISION="af6d057c9b0ec4071d4c49c80e3539258798b609"
 BUNDLED_MODEL_SOURCE="$ROOT_DIR/Artifacts/Phase8/AuraFace-v1/$MODEL_REVISION/coreml-legacy/glintr100-legacy.mlmodel"
 BUNDLED_MODEL_SHA256S=(
@@ -61,6 +62,13 @@ sign_ad_hoc() {
   fi
 }
 
+sign_app_ad_hoc() {
+  local path="$1"
+  if command -v codesign >/dev/null 2>&1; then
+    codesign --force --sign - --entitlements "$APP_ENTITLEMENTS" "$path" >/dev/null
+  fi
+}
+
 has_executable_rpath() {
   local executable="$1"
   local expected_rpath="$2"
@@ -80,6 +88,26 @@ verify_executable_rpath() {
   local executable="$1"
   if ! has_executable_rpath "$executable" "@executable_path/../Frameworks"; then
     echo "App executable is missing @executable_path/../Frameworks runtime search path for bundled frameworks." >&2
+    exit 1
+  fi
+}
+
+verify_app_camera_entitlement() {
+  local path="$1"
+  local entitlements_plist
+  entitlements_plist="$(mktemp "${TMPDIR:-/tmp}/facepass-entitlements.XXXXXX")"
+  if ! codesign -d --entitlements :- "$path" >"$entitlements_plist" 2>/dev/null; then
+    rm -f "$entitlements_plist"
+    echo "Could not inspect code signing entitlements for $path." >&2
+    exit 1
+  fi
+
+  local camera_entitlement
+  camera_entitlement="$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.device.camera' "$entitlements_plist" 2>/dev/null || true)"
+  rm -f "$entitlements_plist"
+
+  if [[ "$camera_entitlement" != "true" ]]; then
+    echo "$path is missing required camera entitlement com.apple.security.device.camera=true." >&2
     exit 1
   fi
 }
@@ -118,6 +146,7 @@ verify_physical_app_bundle() {
   fi
 
   verify_executable_rpath "$path/Contents/MacOS/$APP_NAME"
+  verify_app_camera_entitlement "$path"
 
   [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$path/Contents/Info.plist")" == "FacePass" ]]
   [[ "$(/usr/libexec/PlistBuddy -c 'Print :SUFeedURL' "$path/Contents/Info.plist")" == "$SPARKLE_FEED_URL" ]]
@@ -260,7 +289,7 @@ Publishing a physical fallback bundle for strict verification at:
 EOF
 
   publish_physical_app "$STAGED_APP_DIR" "$CACHE_APP_DIR"
-  sign_ad_hoc "$CACHE_APP_DIR"
+  sign_app_ad_hoc "$CACHE_APP_DIR"
   verify_strict_codesign "$CACHE_APP_DIR"
   STRICT_VERIFIED_APP_DIR="$CACHE_APP_DIR"
 
@@ -368,6 +397,11 @@ if [[ ! -f "$APP_ICON" ]]; then
   exit 1
 fi
 
+if [[ ! -f "$APP_ENTITLEMENTS" ]]; then
+  echo "App entitlements file not found at $APP_ENTITLEMENTS" >&2
+  exit 1
+fi
+
 STAGING_PARENT="$(mktemp -d "${TMPDIR:-/tmp}/facepass-build.XXXXXX")"
 STAGED_APP_DIR="$STAGING_PARENT/$APP_NAME.app"
 
@@ -430,7 +464,7 @@ stage_bundled_model
 
 clean_xattrs "$STAGED_APP_DIR"
 
-sign_ad_hoc "$STAGED_APP_DIR"
+sign_app_ad_hoc "$STAGED_APP_DIR"
 verify_strict_codesign "$STAGED_APP_DIR" >/dev/null
 
 publish_app

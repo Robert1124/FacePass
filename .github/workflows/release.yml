@@ -117,12 +117,13 @@ jobs:
           set -euo pipefail
           APP="dist/FacePass.app"
           SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
+          APP_ENTITLEMENTS="Resources/FacePass.entitlements"
           codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE/Versions/B/XPCServices/Installer.xpc"
           codesign --force --timestamp --options runtime --preserve-metadata=entitlements --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE/Versions/B/XPCServices/Downloader.xpc"
           codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE/Versions/B/Autoupdate"
           codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE/Versions/B/Updater.app"
           codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$SPARKLE"
-          codesign --force --timestamp --options runtime --sign "$DEVELOPER_ID_APPLICATION" "$APP"
+          codesign --force --timestamp --options runtime --entitlements "$APP_ENTITLEMENTS" --sign "$DEVELOPER_ID_APPLICATION" "$APP"
           codesign --verify --strict --deep "$APP"
 
       - name: Submit app bundle for notarization
