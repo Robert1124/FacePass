@@ -182,7 +182,7 @@ if [[ -f ".github/workflows/release.yml" ]]; then
   if ! grep -Fq -- '--release-package "dist/release/FacePass-${RELEASE_VERSION#v}.dmg"' ".github/workflows/release.yml"; then
     fail "release.yml does not verify the Sparkle release gate against the DMG package."
   fi
-  if ! grep -Fq -- '-F draft=false' ".github/workflows/release.yml"; then
+  if ! grep -Fq -- 'gh release edit "$RELEASE_VERSION" --draft=false' ".github/workflows/release.yml"; then
     fail "release.yml does not publish the draft GitHub Release after the release gate passes."
   fi
 else
