@@ -138,7 +138,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          xcrun stapler staple "dist/FacePass.app"
+          for attempt in {1..6}; do
+            if xcrun stapler staple "dist/FacePass.app"; then
+              break
+            fi
+            if [[ "$attempt" == "6" ]]; then
+              echo "Failed to staple app after $attempt attempts." >&2
+              exit 1
+            fi
+            echo "App notarization ticket is not available yet; retrying in 20 seconds."
+            sleep 20
+          done
+          xcrun stapler validate "dist/FacePass.app"
           spctl --assess --type execute --verbose=4 "dist/FacePass.app"
 
       - name: Package release DMG
@@ -165,7 +176,18 @@ jobs:
         run: |
           set -euo pipefail
           PACKAGE="dist/release/FacePass-${RELEASE_VERSION#v}.dmg"
-          xcrun stapler staple "$PACKAGE"
+          for attempt in {1..6}; do
+            if xcrun stapler staple "$PACKAGE"; then
+              break
+            fi
+            if [[ "$attempt" == "6" ]]; then
+              echo "Failed to staple DMG after $attempt attempts." >&2
+              exit 1
+            fi
+            echo "DMG notarization ticket is not available yet; retrying in 20 seconds."
+            sleep 20
+          done
+          xcrun stapler validate "$PACKAGE"
           hdiutil verify "$PACKAGE"
           spctl --assess --type open --context context:primary-signature --verbose=4 "$PACKAGE"
           shasum -a 256 "$PACKAGE" > "$PACKAGE.sha256"
