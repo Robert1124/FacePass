@@ -125,7 +125,7 @@ The setup script may download the pinned AuraFace `glintr100.onnx`, verify it, r
 
 ## Distribution Status
 
-FacePass remains buildable from source. The official public macOS release package is a Developer ID-signed and notarized DMG hosted on GitHub Releases, with Sparkle 2 update checks. The Sparkle feed URL is `https://facepass.app/updates/appcast.xml`; the appcast is hosted by the website under `/updates`, and DMG release packages are hosted on GitHub Releases. Sparkle is only an appcast/package download channel, not telemetry, a backend account service, cloud sync, or an unlock server.
+FacePass remains buildable from source. The official public macOS release package is a Developer ID-signed and notarized DMG hosted on GitHub Releases, with Sparkle 2 update checks. The Sparkle feed URL is `https://facepass.robertw.me/updates/appcast.xml`; the appcast is hosted by the website under `/updates`, and DMG release packages are hosted on GitHub Releases. Sparkle is only an appcast/package download channel, not telemetry, a backend account service, cloud sync, or an unlock server.
 
 Official user-facing DMG packages should come from the tag-triggered GitHub Actions release workflow after credentials and secrets are configured. `v*` tags and explicit `workflow_dispatch` runs are the formal release paths; ordinary pushes should not publish releases. Local packaging remains for dry-run and verification only.
 

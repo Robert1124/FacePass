@@ -315,10 +315,35 @@ p {
   color: #f5f5f7;
 }
 
+.button-download {
+  border: 1px solid rgba(167, 255, 114, 0.55);
+  background: #a7ff72;
+  color: #111;
+  box-shadow: 0 12px 28px rgba(167, 255, 114, 0.18);
+}
+
+.button-download:hover {
+  background: #8ee85c;
+  border-color: rgba(142, 232, 92, 0.72);
+}
+
 .section-white .button-secondary,
 .section-light .button-secondary {
   border-color: var(--line);
   color: var(--ink);
+}
+
+.section-white .button-download,
+.section-light .button-download {
+  border-color: rgba(0, 113, 227, 0.18);
+  background: var(--blue);
+  color: #fff;
+  box-shadow: none;
+}
+
+.section-white .button-download:hover,
+.section-light .button-download:hover {
+  background: var(--blue-dark);
 }
 
 .disclaimer {
@@ -827,6 +852,13 @@ p {
 .doc-steps h3,
 .doc-grid h3 {
   margin-top: 0;
+}
+
+.doc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 pre {

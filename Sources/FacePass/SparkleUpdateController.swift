@@ -3,7 +3,7 @@ import Sparkle
 
 @MainActor
 final class SparkleUpdateController: NSObject {
-    private static let feedURL = "https://facepass.app/updates/appcast.xml"
+    private static let feedURL = "https://facepass.robertw.me/updates/appcast.xml"
 
     private lazy var standardUpdaterController: SPUStandardUpdaterController? = {
         guard isRuntimeConfigured else {

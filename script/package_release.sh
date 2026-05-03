@@ -85,7 +85,12 @@ if [[ ! -d "$APP_DIR/Contents/Frameworks/Sparkle.framework" ]]; then
   exit 1
 fi
 
-require_bundle_value "SUFeedURL" "https://facepass.app/updates/appcast.xml"
+if ! otool -l "$APP_DIR/Contents/MacOS/$APP_NAME" | grep -Fq 'path @executable_path/../Frameworks '; then
+  echo "App executable is missing @executable_path/../Frameworks runtime search path for bundled frameworks." >&2
+  exit 1
+fi
+
+require_bundle_value "SUFeedURL" "https://facepass.robertw.me/updates/appcast.xml"
 /usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$APP_DIR/Contents/Info.plist" >/dev/null
 
 codesign --verify --strict --deep "$APP_DIR"

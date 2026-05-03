@@ -77,7 +77,7 @@ The current WidgetKit extension exposes the Live Activity/Dynamic Island surface
 
 FacePass has no telemetry, analytics, cloud sync, backend account service, external unlock server, APNs unlock path, WebSocket transport, or paid network service. It does not upload passwords, face data, raw camera frames, unlock state, Wi-Fi details, display identifiers, or environment signals.
 
-Sparkle 2 update checks are limited to the website-hosted appcast at `https://facepass.app/updates/appcast.xml` and package downloads from GitHub Releases. Sparkle is not an unlock backend, account service, telemetry channel, cloud sync path, or StandBy Unlock transport. Update checks must not upload passwords, face data, raw camera frames, unlock state, Wi-Fi details, display identifiers, or environment signals.
+Sparkle 2 update checks are limited to the website-hosted appcast at `https://facepass.robertw.me/updates/appcast.xml` and package downloads from GitHub Releases. Sparkle is not an unlock backend, account service, telemetry channel, cloud sync path, or StandBy Unlock transport. Update checks must not upload passwords, face data, raw camera frames, unlock state, Wi-Fi details, display identifiers, or environment signals.
 
 The iOS companion under `Companion/iOS` now has a dedicated Xcode project, app target, shared core target, WidgetKit extension target for the current Live Activity/Dynamic Island surface, test target, entitlements, Info.plist files, assets, and target wiring. Its verified status remains limited: root `swift test` passes, the macOS app bundle verifies through `script/build_and_run.sh --verify`, and the iOS companion passes a generic `iphoneos` `xcodebuild build` with signing disabled plus simulator tests.
 

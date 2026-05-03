@@ -39,7 +39,7 @@ Verification is not complete: root `swift test` passes, the macOS app bundle ver
    - reproducible Developer ID-signed and notarized DMG release packaging
    - Developer ID signing support
    - notarization support
-   - Sparkle 2 appcast publishing at `https://facepass.app/updates/appcast.xml`
+   - Sparkle 2 appcast publishing at `https://facepass.robertw.me/updates/appcast.xml`
    - GitHub Releases hosting for `FacePass-<version>.dmg` and `.dmg.sha256`
    - tag-triggered GitHub Actions releases for `v*` tags and explicit `workflow_dispatch`
    - clearer binary release instructions

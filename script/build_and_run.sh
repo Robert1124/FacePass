@@ -7,7 +7,7 @@ MODE="run"
 APP_NAME="FacePass"
 APP_VERSION="${FACEPASS_APP_VERSION:-0.1.0}"
 BUNDLE_VERSION="${FACEPASS_BUNDLE_VERSION:-1}"
-SPARKLE_FEED_URL="https://facepass.app/updates/appcast.xml"
+SPARKLE_FEED_URL="https://facepass.robertw.me/updates/appcast.xml"
 APP_DIR="$ROOT_DIR/dist/$APP_NAME.app"
 CACHE_APP_DIR="${HOME}/Library/Caches/FacePass/dist/$APP_NAME.app"
 LEGACY_APP_PAYLOAD_DIR="$ROOT_DIR/dist/.$APP_NAME.bundle"
@@ -61,6 +61,29 @@ sign_ad_hoc() {
   fi
 }
 
+has_executable_rpath() {
+  local executable="$1"
+  local expected_rpath="$2"
+  otool -l "$executable" | grep -Fq "path $expected_rpath "
+}
+
+ensure_executable_rpath() {
+  local executable="$1"
+  local framework_rpath="@executable_path/../Frameworks"
+
+  if ! has_executable_rpath "$executable" "$framework_rpath"; then
+    install_name_tool -add_rpath "$framework_rpath" "$executable"
+  fi
+}
+
+verify_executable_rpath() {
+  local executable="$1"
+  if ! has_executable_rpath "$executable" "@executable_path/../Frameworks"; then
+    echo "App executable is missing @executable_path/../Frameworks runtime search path for bundled frameworks." >&2
+    exit 1
+  fi
+}
+
 verify_physical_app_bundle() {
   local path="$1"
 
@@ -93,6 +116,8 @@ verify_physical_app_bundle() {
     echo "Sparkle framework missing at $path/Contents/Frameworks/Sparkle.framework" >&2
     exit 1
   fi
+
+  verify_executable_rpath "$path/Contents/MacOS/$APP_NAME"
 
   [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$path/Contents/Info.plist")" == "FacePass" ]]
   [[ "$(/usr/libexec/PlistBuddy -c 'Print :SUFeedURL' "$path/Contents/Info.plist")" == "$SPARKLE_FEED_URL" ]]
@@ -349,6 +374,7 @@ STAGED_APP_DIR="$STAGING_PARENT/$APP_NAME.app"
 mkdir -p "$STAGED_APP_DIR/Contents/MacOS" "$STAGED_APP_DIR/Contents/Resources"
 
 cp "$BINARY_PATH" "$STAGED_APP_DIR/Contents/MacOS/$APP_NAME"
+ensure_executable_rpath "$STAGED_APP_DIR/Contents/MacOS/$APP_NAME"
 cp "$APP_ICON" "$STAGED_APP_DIR/Contents/Resources/FacePass.icns"
 stage_sparkle_framework
 

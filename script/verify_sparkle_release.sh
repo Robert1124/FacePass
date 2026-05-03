@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-EXPECTED_FEED_URL="https://facepass.app/updates/appcast.xml"
+EXPECTED_FEED_URL="https://facepass.robertw.me/updates/appcast.xml"
 APP_BUNDLE_PATH=""
 RELEASE_PACKAGE_PATH=""
 REQUIRE_APP="false"
@@ -143,6 +143,13 @@ if [[ -n "$APP_BUNDLE_PATH" ]]; then
   [[ -n "$public_key" ]] || fail "SUPublicEDKey is missing from $local_info_plist"
   if [[ "$public_key" =~ (TODO|PLACEHOLDER|REPLACE|example|changeme) ]]; then
     fail "SUPublicEDKey appears to be a placeholder."
+  fi
+
+  if [[ ! -x "$APP_BUNDLE_PATH/Contents/MacOS/FacePass" ]]; then
+    fail "FacePass executable is missing from $APP_BUNDLE_PATH"
+  fi
+  if ! otool -l "$APP_BUNDLE_PATH/Contents/MacOS/FacePass" | grep -Fq 'path @executable_path/../Frameworks '; then
+    fail "FacePass executable is missing @executable_path/../Frameworks runtime search path for bundled Sparkle.framework."
   fi
 else
   if [[ "$REQUIRE_APP" == "true" ]]; then
