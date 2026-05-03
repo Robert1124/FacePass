@@ -17,7 +17,7 @@ permissions:
 jobs:
   macos-release:
     name: Build, sign, notarize, and publish macOS release
-    runs-on: macos-14
+    runs-on: macos-13
     env:
       RELEASE_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}
       FACEPASS_SPARKLE_PUBLIC_ED_KEY: ${{ secrets.FACEPASS_SPARKLE_PUBLIC_ED_KEY }}
@@ -89,12 +89,12 @@ jobs:
       - name: Set up legacy model conversion Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.8"
 
       - name: Prepare bundled recognition model artifact
         shell: bash
         env:
-          FACEPASS_PHASE8_LEGACY_PYTHON: python3.9
+          FACEPASS_PHASE8_LEGACY_PYTHON: python3.8
         run: |
           set -euo pipefail
           if script/phase8_auraface_artifact.sh verify-bundled; then

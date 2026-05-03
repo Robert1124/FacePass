@@ -45,7 +45,7 @@ Commands:
 
 Environment overrides:
   FACEPASS_PHASE8_PYTHON              Python used by env/metadata/convert-fp16.
-  FACEPASS_PHASE8_LEGACY_PYTHON       Python 3.8/3.9 host for legacy-spike.
+  FACEPASS_PHASE8_LEGACY_PYTHON       Python 3.8 host for legacy-spike.
   FACEPASS_PHASE8_LEGACY_VENV_DIR     Ignored legacy-spike venv path.
   FACEPASS_PHASE8_LEGACY_PIP_CACHE_DIR Ignored legacy-spike pip cache path.
 USAGE
@@ -318,7 +318,7 @@ select_legacy_python() {
   fi
 
   local candidate
-  for candidate in python3.9 python3.8; do
+  for candidate in python3.8; do
     if command -v "$candidate" >/dev/null 2>&1; then
       LEGACY_PYTHON_BIN="$candidate"
       echo "Using legacy conversion Python: $LEGACY_PYTHON_BIN"
@@ -326,7 +326,7 @@ select_legacy_python() {
     fi
   done
 
-  echo "Legacy conversion requires Python 3.8 or 3.9. Set FACEPASS_PHASE8_LEGACY_PYTHON to a compatible interpreter." >&2
+  echo "Legacy conversion requires Python 3.8. Set FACEPASS_PHASE8_LEGACY_PYTHON to a compatible interpreter." >&2
   exit 1
 }
 

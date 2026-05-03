@@ -19,9 +19,9 @@ Modes:
   --help    Show this help text.
 
 Python note:
-  Model conversion uses the legacy coremltools path and requires Python 3.8
-  or 3.9. If FACEPASS_PHASE8_LEGACY_PYTHON is unset, this script tries
-  python3.9 and then python3.8. Set FACEPASS_PHASE8_LEGACY_PYTHON to override.
+  Model conversion uses the legacy coremltools path and requires Python 3.8.
+  If FACEPASS_PHASE8_LEGACY_PYTHON is unset, this script tries python3.8.
+  Set FACEPASS_PHASE8_LEGACY_PYTHON to override.
 USAGE
 }
 
@@ -72,7 +72,7 @@ select_legacy_python() {
   fi
 
   local candidate
-  for candidate in python3.9 python3.8; do
+  for candidate in python3.8; do
     if command -v "$candidate" >/dev/null 2>&1; then
       export FACEPASS_PHASE8_LEGACY_PYTHON="$candidate"
       echo "Using legacy conversion Python: $FACEPASS_PHASE8_LEGACY_PYTHON"
@@ -81,8 +81,8 @@ select_legacy_python() {
   done
 
   cat >&2 <<'EOF'
-FacePass needs Python 3.8 or 3.9 to convert the pinned AuraFace model with
-the legacy coremltools dependency stack. Install python3.9 or python3.8, or set
+FacePass needs Python 3.8 to convert the pinned AuraFace model with
+the legacy coremltools dependency stack. Install python3.8, or set
 FACEPASS_PHASE8_LEGACY_PYTHON to a compatible interpreter.
 EOF
   exit 1
@@ -99,10 +99,10 @@ prepare_model_if_needed() {
   local version
   version="$(python_minor_version "$FACEPASS_PHASE8_LEGACY_PYTHON")"
   case "$version" in
-    3.8|3.9)
+    3.8)
       ;;
     *)
-      echo "Legacy conversion requires Python 3.8 or 3.9; got $version from $FACEPASS_PHASE8_LEGACY_PYTHON" >&2
+      echo "Legacy conversion requires Python 3.8; got $version from $FACEPASS_PHASE8_LEGACY_PYTHON" >&2
       exit 1
       ;;
   esac

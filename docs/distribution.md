@@ -26,11 +26,11 @@ When strict codesign verification also passes for `dist/FacePass.app`, that bund
 The manual artifact helper remains available as an advanced fallback:
 
 ```bash
-FACEPASS_PHASE8_LEGACY_PYTHON=python3.9 ./script/phase8_auraface_artifact.sh prepare-bundled
+FACEPASS_PHASE8_LEGACY_PYTHON=python3.8 ./script/phase8_auraface_artifact.sh prepare-bundled
 ./script/build_and_run.sh --verify
 ```
 
-Legacy model conversion requires Python 3.8 or 3.9. If `FACEPASS_PHASE8_LEGACY_PYTHON` is unset, the setup script tries `python3.9` and then `python3.8`.
+Legacy model conversion requires Python 3.8. If `FACEPASS_PHASE8_LEGACY_PYTHON` is unset, the setup script tries `python3.8`.
 
 ## Without An Apple Developer Program Account
 

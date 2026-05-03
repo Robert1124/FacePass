@@ -40,12 +40,12 @@ Launch and stream logs:
 ./script/setup_and_run.sh --logs
 ```
 
-The setup script uses `script/phase8_auraface_artifact.sh` as the advanced local artifact helper when the bundled Core ML artifact is missing or invalid. Conversion uses the legacy `coremltools==4.1` path and requires Python 3.8 or 3.9. If `FACEPASS_PHASE8_LEGACY_PYTHON` is unset, `script/setup_and_run.sh` tries `python3.9` and then `python3.8`; set `FACEPASS_PHASE8_LEGACY_PYTHON` to override.
+The setup script uses `script/phase8_auraface_artifact.sh` as the advanced local artifact helper when the bundled Core ML artifact is missing or invalid. Conversion uses the legacy `coremltools==4.1` path and requires Python 3.8. If `FACEPASS_PHASE8_LEGACY_PYTHON` is unset, `script/setup_and_run.sh` tries `python3.8`; set `FACEPASS_PHASE8_LEGACY_PYTHON` to override.
 
 Advanced fallback:
 
 ```bash
-FACEPASS_PHASE8_LEGACY_PYTHON=python3.9 ./script/phase8_auraface_artifact.sh prepare-bundled
+FACEPASS_PHASE8_LEGACY_PYTHON=python3.8 ./script/phase8_auraface_artifact.sh prepare-bundled
 ```
 
 The helper performs these steps:
@@ -82,7 +82,7 @@ Then build or verify the app:
 ./script/build_and_run.sh
 ```
 
-Python compatibility note: the legacy conversion requirements use `coremltools==4.1`, which depends on `numpy>=1.14.5,<1.20`. That dependency range is not binary-compatible with the Python 3.11/3.12 interpreters observed locally. Use a Python 3.8 or 3.9 interpreter for `FACEPASS_PHASE8_LEGACY_PYTHON` unless the legacy dependency stack has been revalidated.
+Python compatibility note: the legacy conversion requirements use `coremltools==4.1`, which depends on `numpy>=1.14.5,<1.20`. That dependency range is not binary-compatible with the Python 3.9/3.11/3.12 interpreters observed in current local and GitHub Actions environments. Use a Python 3.8 interpreter for `FACEPASS_PHASE8_LEGACY_PYTHON` unless the legacy dependency stack has been revalidated.
 
 The model files are intentionally not committed to this source repository:
 
