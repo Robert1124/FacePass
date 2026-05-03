@@ -4,11 +4,11 @@
         <title>FacePass</title>
         <item>
             <title>0.1.0</title>
-            <pubDate>Sun, 03 May 2026 06:49:41 +0000</pubDate>
-            <sparkle:version>12</sparkle:version>
+            <pubDate>Sun, 03 May 2026 07:17:18 +0000</pubDate>
+            <sparkle:version>14</sparkle:version>
             <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/Robert1124/FacePass/releases/download/v0.1.0/FacePass-0.1.0.dmg" length="248345506" type="application/octet-stream" sparkle:edSignature="BcegRpedWlLL3O9doIn9hI3o2TqmA0oosFvOwvkhrepsp37r/BasoIr6ZbS/iHt98DLDv33SsrgMocevysuaCQ=="/>
+            <enclosure url="https://github.com/Robert1124/FacePass/releases/download/v0.1.0/FacePass-0.1.0.dmg" length="248262768" type="application/octet-stream" sparkle:edSignature="xJh43ScD5U6/eRvxFx1vtPogtPFDCTa0GjIOb8xsCbervPH8hXpX/tTf4GL/2rs/RFQ4kgNusxVfjn3HPnTNDQ=="/>
         </item>
     </channel>
 </rss>
