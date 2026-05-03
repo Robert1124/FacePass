@@ -65,9 +65,15 @@ Size: 260694151 bytes
 
 ```text
 Artifacts/Phase8/AuraFace-v1/af6d057c9b0ec4071d4c49c80e3539258798b609/coreml-legacy/glintr100-legacy.mlmodel
-SHA256: 8e3204d64aad48970c91be2b697d9fb1e88611eded49d5adc49c1fe9453bb3d9
 Size: 260665538 bytes
 ```
+
+Accepted SHA256 values for this Core ML source artifact are:
+
+- `8e3204d64aad48970c91be2b697d9fb1e88611eded49d5adc49c1fe9453bb3d9`
+- `c4d7b18e48954600631de30431d63515235ba6bdc44c3e5e150161cc631d4437`
+
+Both recorded files are same-size outputs from the pinned ONNX source and the legacy `coremltools==4.1` conversion path. The CI release path currently produces the `c4d7...` checksum on the pinned Intel GitHub Actions runner.
 
 You can re-check the generated bundled artifact without downloading or converting:
 

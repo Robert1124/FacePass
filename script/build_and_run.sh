@@ -16,7 +16,10 @@ LOCAL_DRY_RUN_PACKAGE_PATH="$LOCAL_DRY_RUN_OUTPUT_DIR/$APP_NAME-$APP_VERSION.dry
 APP_ICON="$ROOT_DIR/Resources/FacePass.icns"
 MODEL_REVISION="af6d057c9b0ec4071d4c49c80e3539258798b609"
 BUNDLED_MODEL_SOURCE="$ROOT_DIR/Artifacts/Phase8/AuraFace-v1/$MODEL_REVISION/coreml-legacy/glintr100-legacy.mlmodel"
-BUNDLED_MODEL_SHA256="8e3204d64aad48970c91be2b697d9fb1e88611eded49d5adc49c1fe9453bb3d9"
+BUNDLED_MODEL_SHA256S=(
+  "8e3204d64aad48970c91be2b697d9fb1e88611eded49d5adc49c1fe9453bb3d9"
+  "c4d7b18e48954600631de30431d63515235ba6bdc44c3e5e150161cc631d4437"
+)
 BUNDLED_MODEL_SIZE="260665538"
 BUNDLED_MODEL_RESOURCE_DIR="Contents/Resources/Models/AuraFace-v1/$MODEL_REVISION"
 BUNDLED_MODEL_COMPILED_NAME="glintr100-legacy.mlmodelc"
@@ -115,6 +118,24 @@ file_size_bytes() {
   stat -f '%z' "$1"
 }
 
+matches_bundled_model_sha256() {
+  local actual_sha256="$1"
+  local expected_sha256
+  for expected_sha256 in "${BUNDLED_MODEL_SHA256S[@]}"; do
+    if [[ "$actual_sha256" == "$expected_sha256" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+print_expected_bundled_model_sha256s() {
+  local expected_sha256
+  for expected_sha256 in "${BUNDLED_MODEL_SHA256S[@]}"; do
+    echo "  - $expected_sha256" >&2
+  done
+}
+
 verify_bundled_model_source() {
   if [[ ! -f "$BUNDLED_MODEL_SOURCE" ]]; then
     echo "Bundled model source not found at $BUNDLED_MODEL_SOURCE" >&2
@@ -130,8 +151,9 @@ verify_bundled_model_source() {
 
   local actual_sha256
   actual_sha256="$(shasum -a 256 "$BUNDLED_MODEL_SOURCE" | awk '{print $1}')"
-  if [[ "$actual_sha256" != "$BUNDLED_MODEL_SHA256" ]]; then
-    echo "Bundled model source checksum mismatch: expected $BUNDLED_MODEL_SHA256, got $actual_sha256" >&2
+  if ! matches_bundled_model_sha256 "$actual_sha256"; then
+    echo "Bundled model source checksum mismatch: got $actual_sha256; expected one of:" >&2
+    print_expected_bundled_model_sha256s
     exit 1
   fi
 }

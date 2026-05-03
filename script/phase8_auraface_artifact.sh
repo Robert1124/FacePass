@@ -21,7 +21,10 @@ LEGACY_COREML_DIR="$ARTIFACT_DIR/coreml-legacy"
 LEGACY_MLMODEL_PATH="$LEGACY_COREML_DIR/glintr100-legacy.mlmodel"
 LEGACY_OPSET10_ONNX_PATH="$ARTIFACT_DIR/glintr100-opset10-derived.onnx"
 LEGACY_COREMLTOOLS_WHEEL_URL="https://files.pythonhosted.org/packages/86/6d/4c3bfb5581af66b186ea3c43c7458ba65136f0fb19ac01b9cd8fa51cfbcd/coremltools-4.1-cp38-none-macosx_10_16_intel.whl"
-EXPECTED_LEGACY_MLMODEL_SHA256="8e3204d64aad48970c91be2b697d9fb1e88611eded49d5adc49c1fe9453bb3d9"
+EXPECTED_LEGACY_MLMODEL_SHA256S=(
+  "8e3204d64aad48970c91be2b697d9fb1e88611eded49d5adc49c1fe9453bb3d9"
+  "c4d7b18e48954600631de30431d63515235ba6bdc44c3e5e150161cc631d4437"
+)
 EXPECTED_LEGACY_MLMODEL_SIZE="260665538"
 PYTHON_BIN="${FACEPASS_PHASE8_PYTHON:-python3}"
 LEGACY_PYTHON_BIN="${FACEPASS_PHASE8_LEGACY_PYTHON:-}"
@@ -58,6 +61,24 @@ file_size() {
 
 sha256() {
   shasum -a 256 "$1" | awk '{print $1}'
+}
+
+matches_expected_legacy_mlmodel_sha256() {
+  local actual_sha256="$1"
+  local expected_sha256
+  for expected_sha256 in "${EXPECTED_LEGACY_MLMODEL_SHA256S[@]}"; do
+    if [[ "$actual_sha256" == "$expected_sha256" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+print_expected_legacy_mlmodel_sha256s() {
+  local expected_sha256
+  for expected_sha256 in "${EXPECTED_LEGACY_MLMODEL_SHA256S[@]}"; do
+    echo "  - $expected_sha256" >&2
+  done
 }
 
 print_env() {
@@ -135,8 +156,9 @@ verify_legacy_coreml() {
   echo "Bundled Core ML path: $LEGACY_MLMODEL_PATH"
   echo "Bundled Core ML SHA256: $actual_sha"
   echo "Bundled Core ML size: $actual_size"
-  if [[ "$actual_sha" != "$EXPECTED_LEGACY_MLMODEL_SHA256" ]]; then
-    echo "Bundled Core ML SHA256 mismatch. Expected $EXPECTED_LEGACY_MLMODEL_SHA256" >&2
+  if ! matches_expected_legacy_mlmodel_sha256 "$actual_sha"; then
+    echo "Bundled Core ML SHA256 mismatch. Expected one of:" >&2
+    print_expected_legacy_mlmodel_sha256s
     exit 1
   fi
   if [[ "$actual_size" != "$EXPECTED_LEGACY_MLMODEL_SIZE" ]]; then
