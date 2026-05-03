@@ -17,6 +17,8 @@ public final class URLSessionStandByUnlockTransport: StandByUnlockTransporting {
 }
 
 public final class StandByUnlockClient {
+    private static let endpointRediscoveryTimeout: Duration = .seconds(8)
+
     private let endpointCache: EndpointCaching
     private let rediscoveryService: BonjourRediscovering
     private let keyStore: CompanionKeyStoring
@@ -51,26 +53,27 @@ public final class StandByUnlockClient {
             return StandByUnlockResult(ok: false, result: nil, errorCode: "not_paired")
         }
 
-        let request = try signedRequest(for: pairedMac)
-
         if let endpoint = pairedMac.cachedEndpoint {
             do {
-                let result = try await post(request, to: endpoint)
+                let result = try await post(try signedRequest(for: pairedMac), to: endpoint)
                 try saveSuccessfulEndpoint(endpoint, for: pairedMac, when: result)
                 return result
             } catch {
                 let rediscovered = try await rediscoveryService.rediscoverEndpoint(
                     for: pairedMac,
-                    timeout: .seconds(3)
+                    timeout: Self.endpointRediscoveryTimeout
                 )
-                let result = try await post(request, to: rediscovered)
+                let result = try await post(try signedRequest(for: pairedMac), to: rediscovered)
                 try saveSuccessfulEndpoint(rediscovered, for: pairedMac, when: result)
                 return result
             }
         }
 
-        let rediscovered = try await rediscoveryService.rediscoverEndpoint(for: pairedMac, timeout: .seconds(3))
-        let result = try await post(request, to: rediscovered)
+        let rediscovered = try await rediscoveryService.rediscoverEndpoint(
+            for: pairedMac,
+            timeout: Self.endpointRediscoveryTimeout
+        )
+        let result = try await post(try signedRequest(for: pairedMac), to: rediscovered)
         try saveSuccessfulEndpoint(rediscovered, for: pairedMac, when: result)
         return result
     }

@@ -4,7 +4,6 @@ import SwiftUI
 struct PairingScanView: View {
     @ObservedObject var model: FacePassCompanionModel
 
-    @State private var manualPayload = ""
     @State private var status = "Scan the FacePass pairing QR code on your Mac."
     @State private var cameraState: QRCodeScannerAuthorizationState = .checking
     @State private var decodedPayload: PairingQRCodePayload?
@@ -33,26 +32,6 @@ struct PairingScanView: View {
                     .padding(.vertical, 8)
                 }
 
-                Section {
-                    TextEditor(text: $manualPayload)
-                        .font(.system(.callout, design: .monospaced))
-                        .frame(minHeight: 130)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-
-                    Button {
-                        Task {
-                            await submit(manualPayload)
-                        }
-                    } label: {
-                        Label("Pair from Pasted JSON", systemImage: "doc.text.magnifyingglass")
-                    }
-                    .disabled(isPairing || manualPayload.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                } header: {
-                    Text("Manual Pairing JSON")
-                } footer: {
-                    Text("Use this field for simulator and development builds when the camera is unavailable.")
-                }
             }
             .navigationTitle("Pair Mac")
             .toolbar {
@@ -96,11 +75,11 @@ struct PairingScanView: View {
         case .checking, .authorized:
             EmptyView()
         case .denied:
-            scannerMessage("Camera access is off. Enable camera access in Settings or paste the pairing JSON below.")
+            scannerMessage("Camera access is off. Enable camera access in Settings to scan the Mac pairing code.")
         case .restricted:
-            scannerMessage("Camera access is restricted on this iPhone. Paste the pairing JSON below.")
+            scannerMessage("Camera access is restricted on this iPhone.")
         case .unavailable:
-            scannerMessage("Camera is unavailable. Paste the pairing JSON below.")
+            scannerMessage("Camera is unavailable on this iPhone.")
         }
     }
 
@@ -159,7 +138,6 @@ struct PairingScanView: View {
             status = "Pairing with the Mac..."
             try await model.pair(with: payload)
             status = "Mac paired."
-            manualPayload = ""
         } catch {
             status = PairingPayloadDecoder.displayText(for: error)
             lastScannedCode = nil

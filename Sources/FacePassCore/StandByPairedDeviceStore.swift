@@ -113,6 +113,9 @@ public final class StandByPairedDeviceStore: StandByPairedDeviceStoring {
         case errSecItemNotFound:
             return try currentPairedDeviceFromAccountAttributes()
         default:
+            if let currentDevice = try currentPairedDeviceFromAccountAttributes() {
+                return currentDevice
+            }
             throw StandByPairedDeviceStoreError.keychainFailure(status)
         }
     }

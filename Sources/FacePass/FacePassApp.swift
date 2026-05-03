@@ -177,9 +177,9 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
                 await appStateManager.handleStandByUnlockRequest(request)
                 return appStateManager.lastStandByUnlockResult ?? .verificationFailed(.replayStoreFailed)
             },
-            pairingDidChange: { [weak appStateManager] in
+            pairingDidChange: { [weak appStateManager] result in
                 Task { @MainActor in
-                    appStateManager?.refreshStandByUnlockStatus()
+                    appStateManager?.recordStandByPairedIPhoneDeviceId(result.iphoneDeviceId)
                 }
             }
         )

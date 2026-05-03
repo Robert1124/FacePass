@@ -5,8 +5,8 @@ import FacePassCompanionCore
 
 @available(iOS 17.0, *)
 public struct StandByUnlockIntent: LiveActivityIntent {
-    public static var title: LocalizedStringResource = "Unlock Mac"
-    public static var description = IntentDescription("Sends a signed local FacePass StandBy Unlock request to a paired Mac.")
+    public static var title: LocalizedStringResource = "Request Unlock"
+    public static var description = IntentDescription("Sends a signed local FacePass StandBy Unlock request to the paired desktop helper.")
     public static var openAppWhenRun = false
     public static var authenticationPolicy: IntentAuthenticationPolicy = .requiresLocalDeviceAuthentication
 
@@ -48,11 +48,11 @@ public struct FacePassCompanionShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: StandByUnlockIntent(),
             phrases: [
-                "Unlock Mac with \(.applicationName)",
+                "Request unlock with \(.applicationName)",
                 "Send FacePass unlock with \(.applicationName)",
-                "\(.applicationName) unlock Mac"
+                "\(.applicationName) request unlock"
             ],
-            shortTitle: "Unlock Mac",
+            shortTitle: "Request Unlock",
             systemImageName: "lock.open"
         )
     }

@@ -82,9 +82,9 @@ enum PairingPayloadDecoderError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .emptyPayload:
-            "Paste the pairing JSON or scan the QR code from the Mac."
+            "Scan the pairing QR code from the Mac."
         case .invalidJSON:
-            "This pairing text is not valid JSON."
+            "This QR code is not valid FacePass pairing data."
         case .invalidPayload:
             "This is not a valid FacePass pairing code."
         case .unsupportedProtocolVersion:

@@ -12,7 +12,7 @@ struct StandByUnlockWidget: Widget {
                 .containerBackground(.background, for: .widget)
         }
         .configurationDisplayName("FacePass Unlock")
-        .description("Send a signed local FacePass unlock request to your paired Mac.")
+        .description("Send a signed local FacePass unlock request to the paired desktop helper.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

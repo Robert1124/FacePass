@@ -190,6 +190,39 @@ final class StandByUnlockPairingControllerTests: XCTestCase {
         XCTAssertEqual(client.accountDataQueries, [device.iphoneDeviceId])
     }
 
+    func testCurrentPairedDeviceFallsBackToAccountLookupWhenAggregateDataQueryFails() throws {
+        let device = StandByPairedDevice(
+            iphoneDeviceId: "iphone-standby-aggregate-failure",
+            displayName: "Aggregate Failure iPhone",
+            publicKeyX963Representation: P256.Signing.PrivateKey().publicKey.x963Representation,
+            signingAlgorithm: .p256SHA256,
+            isEnabled: true,
+            createdAt: standbyHTTPDate("2026-05-03T18:58:00Z"),
+            lastSeenAt: standbyHTTPDate("2026-05-03T18:59:00Z"),
+            highestAcceptedCounter: 45
+        )
+        let encodedDevice = try JSONEncoder().encode(device)
+        let client = StubStandByPairedDeviceSecItemClient(
+            serviceDataResult: nil,
+            serviceDataStatus: errSecInteractionNotAllowed,
+            attributesResult: [
+                [kSecAttrAccount as String: device.iphoneDeviceId]
+            ],
+            devicesByAccount: [device.iphoneDeviceId: encodedDevice]
+        )
+        let store = StandByPairedDeviceStore(
+            service: "FacePass.StandByPairedDeviceStoreTests.\(UUID().uuidString)",
+            secItemClient: client
+        )
+
+        let current = try XCTUnwrap(store.currentPairedDevice())
+
+        XCTAssertEqual(current, device)
+        XCTAssertEqual(client.serviceDataQueryCount, 1)
+        XCTAssertEqual(client.attributeQueryCount, 1)
+        XCTAssertEqual(client.accountDataQueries, [device.iphoneDeviceId])
+    }
+
     func testCurrentPairedDeviceIgnoresMalformedAggregateRecordsWhenValidDeviceExists() throws {
         let device = StandByPairedDevice(
             iphoneDeviceId: "iphone-standby-1",
@@ -503,6 +536,7 @@ private final class BlockingFirstReplacePairedDeviceStore: InMemoryStandByHTTPPa
 private final class StubStandByPairedDeviceSecItemClient: StandByPairedDeviceSecItemClient {
     private let lock = NSLock()
     private let serviceDataResult: Any?
+    private let serviceDataStatus: OSStatus
     private let attributesResult: Any?
     private let devicesByAccount: [String: Data]
     private(set) var serviceDataQueryCount = 0
@@ -511,10 +545,12 @@ private final class StubStandByPairedDeviceSecItemClient: StandByPairedDeviceSec
 
     init(
         serviceDataResult: Any?,
+        serviceDataStatus: OSStatus? = nil,
         attributesResult: Any?,
         devicesByAccount: [String: Data]
     ) {
         self.serviceDataResult = serviceDataResult
+        self.serviceDataStatus = serviceDataStatus ?? (serviceDataResult == nil ? errSecItemNotFound : errSecSuccess)
         self.attributesResult = attributesResult
         self.devicesByAccount = devicesByAccount
     }
@@ -549,7 +585,7 @@ private final class StubStandByPairedDeviceSecItemClient: StandByPairedDeviceSec
 
             serviceDataQueryCount += 1
             result?.pointee = serviceDataResult as CFTypeRef?
-            return serviceDataResult == nil ? errSecItemNotFound : errSecSuccess
+            return serviceDataStatus
         }
     }
 

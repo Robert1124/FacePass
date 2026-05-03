@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import XCTest
 @testable import FacePassCore
@@ -123,6 +124,47 @@ final class StandByUnlockHTTPServerTests: XCTestCase {
         XCTAssertEqual(json["errorCode"] as? String, "expired_token")
         XCTAssertFalse(response.bodyString.localizedCaseInsensitiveContains("password"))
         XCTAssertFalse(response.bodyString.contains(session.oneTimeToken))
+    }
+
+    @MainActor
+    func testPairEndpointNotifiesPairingResultForPersistentRestartRecovery() async throws {
+        let pairingController = makePairingController()
+        let session = pairingController.startPairingSession()
+        var recordedResult: StandByIPhonePairingResult?
+        let router = StandByUnlockHTTPRouter(
+            macDeviceId: "mac-facepass-1",
+            protocolVersion: 1,
+            serverStatus: .ready,
+            publicKeyFingerprint: "SHA256:public-key-fingerprint",
+            isIPhoneUnlockEnabled: { true },
+            pairingController: pairingController,
+            unlockHandler: { _ in
+                XCTFail("POST /v1/pair must not run unlock handling")
+                return StandByUnlockAttemptStatus.unlockResult(.typingFailed)
+            },
+            pairingDidChange: { result in
+                recordedResult = result
+            }
+        )
+        let registration = StandByIPhonePairingRegistration(
+            oneTimeToken: session.oneTimeToken,
+            iphoneDeviceId: "iphone-standby-result",
+            displayName: "Result iPhone",
+            publicKeyX963Representation: P256.Signing.PrivateKey().publicKey.x963Representation
+        )
+
+        let response = await router.handle(
+            StandByHTTPServerRequest(
+                method: "POST",
+                path: "/v1/pair",
+                body: try JSONEncoder.standbyHTTP.encode(registration)
+            )
+        )
+
+        XCTAssertEqual(response.statusCode, 200)
+        XCTAssertEqual(recordedResult?.iphoneDeviceId, "iphone-standby-result")
+        XCTAssertEqual(recordedResult?.displayName, "Result iPhone")
+        XCTAssertFalse(String(describing: recordedResult).contains("PRIVATE-KEY"))
     }
 
     @MainActor

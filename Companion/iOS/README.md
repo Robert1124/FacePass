@@ -121,7 +121,7 @@ Unlock responses from `/v1/standby-unlock` decode as:
 
 - `App/FacePassCompanionApp.swift`: app entry point and root app flow.
 - `App/FacePassCompanionModel.swift`: app-side state, pairing, unlock, forget-pairing, and Live Activity orchestration.
-- `Features/Pairing/PairingScanView.swift`: QR pairing scan flow with manual JSON fallback.
+- `Features/Pairing/PairingScanView.swift`: QR pairing scan flow.
 - `Features/Pairing/QRCodeScannerView.swift`: AVFoundation QR camera scanner.
 - `Features/Status/PairedStatusView.swift`: paired Mac state and unlock UI.
 - `Features/LiveActivity/StandByLiveActivityController.swift`: app-side Live Activity start/update.
@@ -132,11 +132,11 @@ Unlock responses from `/v1/standby-unlock` decode as:
 - `Services/StandByUnlockCounterStore.swift`: durable per-Mac counter in app-group UserDefaults with OS file lock / cross-process coordination for app and widget increments.
 - `Services/BonjourRediscoveryService.swift`: short Bonjour rediscovery for the paired Mac.
 - `Services/PairingClient.swift`: `/v1/pair` client.
-- `Services/StandByUnlockClient.swift`: local HTTP request flow with cached endpoint first and Bonjour fallback.
+- `Services/StandByUnlockClient.swift`: local HTTP request flow with cached endpoint first and Bonjour fallback; fallback retries sign a fresh request with a new request ID and counter so Mac replay protection does not reject a consumed request.
 - `Widgets/StandByUnlockActivityAttributes.swift`: ActivityKit attributes for StandBy/Live Activity surfaces.
 - `Widgets/StandByUnlockLiveActivityWidget.swift`: `FacePass Ready` Live Activity card with an `Unlock Mac` button.
 - `Widgets/StandByUnlockWidget.swift`: optional WidgetKit FacePass Unlock widget with FacePass app icon artwork, compact small-widget branding, and an icon-only unlock button using the same AppIntent as the Live Activity.
-- `Intents/StandByUnlockIntent.swift`: `Unlock Mac` `LiveActivityIntent` with `openAppWhenRun = false`.
+- `Intents/StandByUnlockIntent.swift`: `Request Unlock` `LiveActivityIntent` with `openAppWhenRun = false`.
 
 The Live Activity remains the app-started StandBy card path. The optional FacePass Unlock widget is not programmatically started by the app; users add it from the iOS widget gallery or StandBy customization. Its button uses `StandByUnlockIntent`, so it usually runs the signed local request without opening FacePass, but final presentation and launch behavior can vary by iOS surface and system state.
 
@@ -164,7 +164,7 @@ Real-device manual verification is still required for:
 - Bonjour discovery against the Mac, including the widget extension's Local Network and `_facepass._tcp` Bonjour declarations because the AppIntent runs there
 - `/v1/pair`
 - `/v1/standby-unlock`
-- StandBy card and `Unlock Mac` AppIntent
+- StandBy card and `Request Unlock` AppIntent
 - FacePass Unlock optional widget on supported iOS widget/StandBy surfaces, including whether the AppIntent runs without opening the app on the tested iOS version
 - actual Mac lock-screen unlock path
 

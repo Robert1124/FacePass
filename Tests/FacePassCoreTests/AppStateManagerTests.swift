@@ -2221,6 +2221,51 @@ final class AppStateManagerTests: XCTestCase {
         XCTAssertFalse(String(describing: manager.standByIPhoneUnlockStatus).contains("PUBLIC-KEY-MATERIAL"))
     }
 
+    func testStandByPairedStatusRecoversFromPersistedIPhoneDeviceIdWhenAggregateLookupFailsAfterRestart() throws {
+        let isolatedDefaults = makeIsolatedUserDefaults()
+        let device = StandByPairedDevice(
+            iphoneDeviceId: "iphone-restart-1",
+            displayName: "Restart iPhone",
+            publicKeyX963Representation: Data("PUBLIC-KEY-MATERIAL".utf8),
+            signingAlgorithm: .p256SHA256,
+            isEnabled: true,
+            createdAt: standbyAppStateDate("2026-05-03T18:58:00Z"),
+            lastSeenAt: standbyAppStateDate("2026-05-03T18:59:00Z"),
+            highestAcceptedCounter: 45
+        )
+
+        let initialStore = RecordingStandByPairedDeviceStore(device: device)
+        let initialManager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: []),
+            passwordVault: SpyPasswordVault(storedPassword: nil),
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: false, result: .filled),
+            standByPairedDeviceStore: initialStore,
+            standByHTTPServerStatusProvider: StubStandByHTTPServerStatusProvider(httpStatus: .ready),
+            userDefaults: isolatedDefaults.defaults
+        )
+        initialManager.refreshStandByUnlockStatus()
+        XCTAssertEqual(initialManager.standByIPhoneUnlockStatus.pairingState, .paired)
+
+        let restartedStore = RecordingStandByPairedDeviceStore(
+            device: device,
+            allowsCurrentLookup: false
+        )
+        let restartedManager = AppStateManager(
+            permissionStatusProvider: StubPermissionStatusProvider(statuses: []),
+            passwordVault: SpyPasswordVault(storedPassword: nil),
+            autofillService: StubPasswordAutofillService(isAccessibilityTrusted: false, result: .filled),
+            standByPairedDeviceStore: restartedStore,
+            standByHTTPServerStatusProvider: StubStandByHTTPServerStatusProvider(httpStatus: .ready),
+            userDefaults: isolatedDefaults.defaults
+        )
+
+        XCTAssertEqual(restartedManager.standByIPhoneUnlockStatus.pairingState, .paired)
+        XCTAssertTrue(restartedManager.standByIPhoneUnlockStatus.isPaired)
+        XCTAssertEqual(restartedManager.standByIPhoneUnlockStatus.pairedIPhoneDisplayName, "Restart iPhone")
+        XCTAssertEqual(restartedManager.standByIPhoneUnlockStatus.lastSeenAt, device.lastSeenAt)
+        XCTAssertFalse(String(describing: restartedManager.standByIPhoneUnlockStatus).contains("PUBLIC-KEY-MATERIAL"))
+    }
+
     func testForgetStandByPairedIPhoneDeletesTrustRecordAndRefreshesNonSensitiveStatus() throws {
         let pairedAt = standbyAppStateDate("2026-04-26T10:15:00Z")
         let lastSeen = standbyAppStateDate("2026-04-26T11:45:00Z")

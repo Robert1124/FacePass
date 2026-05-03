@@ -14,6 +14,7 @@ public protocol AutomaticLockScreenOverlayPresenting: AnyObject {
 
 public final class AppStateManager: ObservableObject {
     private static let lockScreenUnlockEnabledDefaultsKey = "FacePass.lockScreenUnlockEnabled"
+    private static let lastKnownStandByIPhoneDeviceIdDefaultsKey = "FacePass.standByUnlock.lastKnownIPhoneDeviceId"
     private static let automaticLockScreenOverlayDismissDelay: TimeInterval = 1
     private static let recognitionPreviewStepDelay: TimeInterval = 0.9
     private static let recognitionPreviewDismissDelay: TimeInterval = 2.4
@@ -75,7 +76,7 @@ public final class AppStateManager: ObservableObject {
     private var shouldSuppressScheduledAutomaticLockScreenAttempt = false
     private var automaticLockScreenOverlayGeneration: UInt = 0
     private var recognitionPreviewGeneration: UInt = 0
-    private var lastVerifiedStandByIPhoneDeviceId: String?
+    private var lastKnownStandByIPhoneDeviceId: String?
 
     public init(
         permissionStatusProvider: PermissionStatusProviding = SystemPermissionStatusProvider(),
@@ -114,6 +115,9 @@ public final class AppStateManager: ObservableObject {
         self.automationConditionEvaluator = AutomationConditionEvaluator(signalProvider: conditionSignalProvider)
         self.isLockScreenUnlockEnabled = userDefaults.bool(
             forKey: Self.lockScreenUnlockEnabledDefaultsKey
+        )
+        self.lastKnownStandByIPhoneDeviceId = userDefaults.string(
+            forKey: Self.lastKnownStandByIPhoneDeviceIdDefaultsKey
         )
         self.screenStateEventScheduler = screenStateEventScheduler ?? MainQueueUnlockScheduler()
         self.lockScreenWakeDelay = max(0, lockScreenWakeDelay)
@@ -319,6 +323,9 @@ public final class AppStateManager: ObservableObject {
         if pairedDevice != nil {
             standByPairingSession = nil
         }
+        if let pairedDevice {
+            rememberStandByIPhoneDeviceId(pairedDevice.iphoneDeviceId)
+        }
         let nextPairingState = pairingState(
             pairedDevice: pairedDevice,
             activeSession: standByPairingSession
@@ -346,7 +353,13 @@ public final class AppStateManager: ObservableObject {
         }
 
         try standByPairedDeviceStore.deleteAllPairedDevices()
+        forgetStandByIPhoneDeviceId()
         standByPairingSession = nil
+        refreshStandByUnlockStatus()
+    }
+
+    public func recordStandByPairedIPhoneDeviceId(_ iphoneDeviceId: String) {
+        rememberStandByIPhoneDeviceId(iphoneDeviceId)
         refreshStandByUnlockStatus()
     }
 
@@ -608,7 +621,7 @@ public final class AppStateManager: ObservableObject {
             refreshStandByUnlockStatus()
             return
         }
-        lastVerifiedStandByIPhoneDeviceId = verifiedRequest.iphoneDeviceId
+        rememberStandByIPhoneDeviceId(verifiedRequest.iphoneDeviceId)
 
         guard isAccessibilityAuthorized else {
             lastStandByUnlockResult = .unlockResult(.accessibilityPermissionDenied)
@@ -1101,13 +1114,28 @@ public final class AppStateManager: ObservableObject {
             return currentDevice
         }
 
-        guard let lastVerifiedStandByIPhoneDeviceId else {
+        guard let lastKnownStandByIPhoneDeviceId else {
             return nil
         }
 
         return try? standByPairedDeviceStore.pairedDevice(
-            forIPhoneDeviceId: lastVerifiedStandByIPhoneDeviceId
+            forIPhoneDeviceId: lastKnownStandByIPhoneDeviceId
         )
+    }
+
+    private func rememberStandByIPhoneDeviceId(_ iphoneDeviceId: String) {
+        let trimmedDeviceId = iphoneDeviceId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedDeviceId.isEmpty else {
+            return
+        }
+
+        lastKnownStandByIPhoneDeviceId = trimmedDeviceId
+        userDefaults.set(trimmedDeviceId, forKey: Self.lastKnownStandByIPhoneDeviceIdDefaultsKey)
+    }
+
+    private func forgetStandByIPhoneDeviceId() {
+        lastKnownStandByIPhoneDeviceId = nil
+        userDefaults.removeObject(forKey: Self.lastKnownStandByIPhoneDeviceIdDefaultsKey)
     }
 
     private func pairedIPhoneDisplayName(for pairedDevice: StandByPairedDevice?) -> String? {

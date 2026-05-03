@@ -47,7 +47,7 @@ public final class StandByUnlockHTTPRouter {
     private let isIPhoneUnlockEnabled: () -> Bool
     private let pairingController: StandByUnlockPairingController
     private let unlockHandler: (StandByUnlockRequest) async -> StandByUnlockAttemptStatus
-    private let pairingDidChange: () -> Void
+    private let pairingDidChange: (StandByIPhonePairingResult) -> Void
 
     public init(
         macDeviceId: String,
@@ -57,7 +57,7 @@ public final class StandByUnlockHTTPRouter {
         isIPhoneUnlockEnabled: @escaping () -> Bool,
         pairingController: StandByUnlockPairingController,
         unlockHandler: @escaping (StandByUnlockRequest) async -> StandByUnlockAttemptStatus,
-        pairingDidChange: @escaping () -> Void = {}
+        pairingDidChange: @escaping (StandByIPhonePairingResult) -> Void = { _ in }
     ) {
         self.macDeviceId = macDeviceId
         self.protocolVersion = protocolVersion
@@ -77,7 +77,7 @@ public final class StandByUnlockHTTPRouter {
         isIPhoneUnlockEnabled: @escaping () -> Bool,
         pairingController: StandByUnlockPairingController,
         unlockHandler: @escaping (StandByUnlockRequest) async -> StandByUnlockAttemptStatus,
-        pairingDidChange: @escaping () -> Void = {}
+        pairingDidChange: @escaping (StandByIPhonePairingResult) -> Void = { _ in }
     ) {
         self.macDeviceId = macDeviceId
         self.protocolVersion = protocolVersion
@@ -121,7 +121,7 @@ public final class StandByUnlockHTTPRouter {
                 from: body
             )
             let result = try pairingController.registerIPhone(registration)
-            pairingDidChange()
+            pairingDidChange(result)
             return jsonResponse(statusCode: 200, payload: [
                 "ok": true,
                 "result": "paired",

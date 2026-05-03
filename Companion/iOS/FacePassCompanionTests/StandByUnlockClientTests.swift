@@ -143,13 +143,17 @@ final class StandByUnlockClientTests: XCTestCase {
             response: #"{"ok":true,"result":"unlock_requested"}"#.data(using: .utf8)!,
             failuresBeforeSuccess: 1
         )
+        let rediscovery = FakeRediscovery(
+            endpoint: MacEndpoint(host: "127.0.0.1", port: 45001, scheme: "http")
+        )
+        var requestIds = ["standby-request-1", "standby-request-2"][...]
         let client = StandByUnlockClient(
             endpointCache: cache,
-            rediscoveryService: FakeRediscovery(endpoint: MacEndpoint(host: "127.0.0.1", port: 45001, scheme: "http")),
+            rediscoveryService: rediscovery,
             keyStore: FakeKeyStore(),
             counterStore: FakeCounterStore(),
             clock: { standbyClientDate("2026-04-27T14:04:30Z") },
-            requestIdGenerator: { "standby-request-1" },
+            requestIdGenerator: { requestIds.removeFirst() },
             transport: transport
         )
 
@@ -160,6 +164,15 @@ final class StandByUnlockClientTests: XCTestCase {
             "http://192.0.2.10:45000/v1/standby-unlock",
             "http://127.0.0.1:45001/v1/standby-unlock"
         ])
+        let firstBody = try XCTUnwrap(transport.requests[0].httpBody)
+        let secondBody = try XCTUnwrap(transport.requests[1].httpBody)
+        let firstObject = try XCTUnwrap(JSONSerialization.jsonObject(with: firstBody) as? [String: Any])
+        let secondObject = try XCTUnwrap(JSONSerialization.jsonObject(with: secondBody) as? [String: Any])
+        XCTAssertEqual(firstObject["requestId"] as? String, "standby-request-1")
+        XCTAssertEqual(secondObject["requestId"] as? String, "standby-request-2")
+        XCTAssertEqual(firstObject["counter"] as? Int, 1)
+        XCTAssertEqual(secondObject["counter"] as? Int, 2)
+        XCTAssertEqual(rediscovery.requestedTimeouts, [.seconds(8)])
         XCTAssertEqual(cache.savedMacs.last?.cachedEndpoint, MacEndpoint(host: "127.0.0.1", port: 45001, scheme: "http"))
         XCTAssertNotNil(cache.savedMacs.last?.lastSeenAt)
     }
@@ -201,10 +214,16 @@ private final class FakeEndpointCache: EndpointCaching {
     }
 }
 
-private struct FakeRediscovery: BonjourRediscovering {
+private final class FakeRediscovery: BonjourRediscovering {
     let endpoint: MacEndpoint?
+    private(set) var requestedTimeouts: [Duration] = []
+
+    init(endpoint: MacEndpoint?) {
+        self.endpoint = endpoint
+    }
 
     func rediscoverEndpoint(for mac: PairedMac, timeout: Duration) async throws -> MacEndpoint {
+        requestedTimeouts.append(timeout)
         guard let endpoint else {
             throw BonjourRediscoveryError.notFound
         }
