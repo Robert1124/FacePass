@@ -225,6 +225,12 @@ if [[ -f "website/updates/appcast.xml" ]]; then
     if ! grep -Fq "$release_package_name" "website/updates/appcast.xml"; then
       fail "appcast does not reference release package $release_package_name."
     fi
+    release_version="${release_package_name#FacePass-}"
+    release_version="${release_version%.dmg}"
+    expected_release_download_path="/releases/download/v${release_version}/${release_package_name}"
+    if ! grep -Fq "$expected_release_download_path" "website/updates/appcast.xml"; then
+      fail "appcast does not reference the expected GitHub Releases tag download path: $expected_release_download_path"
+    fi
   fi
 else
   if [[ "$EXPECT_APPCAST" == "true" ]]; then

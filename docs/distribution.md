@@ -87,6 +87,8 @@ Local packaging remains useful for dry-run verification, bundle inspection, sign
 
 The expected official GitHub Release artifacts are `FacePass-<version>.dmg` and `FacePass-<version>.dmg.sha256`. The DMG must contain the Developer ID-signed and notarized Mac app, the DMG itself must be Developer ID-signed before DMG notarization, and the website-hosted Sparkle appcast at `/updates/appcast.xml` must reference that DMG. The release workflow is tag-triggered for `v*` tags, with explicit `workflow_dispatch` reserved for manual release runs. The current workflow writes the generated appcast back to `website/updates/appcast.xml` on the repository default branch after the release gate passes, so the site deployment must publish that path to `https://facepass.app/updates/appcast.xml`.
 
+Sparkle appcast generation uses a GitHub Release download URL prefix with a trailing slash, for example `https://github.com/Robert1124/FacePass/releases/download/v0.1.0/`, so generated enclosure URLs include both the tag and DMG filename.
+
 Because Sparkle bundles helper code inside `Sparkle.framework`, the Actions release workflow re-signs Sparkle's nested `Installer.xpc`, `Downloader.xpc`, `Autoupdate`, and `Updater.app` with the Developer ID Application identity before signing the framework and app. If Apple notarization returns `Invalid`, the workflow prints the Apple notary log before failing so the rejected bundle path is visible in the Actions output.
 
 `script/package_release.sh` rejects ad-hoc signatures for formal packages. For signed release builds, it accepts either an explicit Developer ID Application authority from `codesign` or a Gatekeeper assessment whose source is Developer ID or Notarized Developer ID.

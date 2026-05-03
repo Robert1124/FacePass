@@ -269,7 +269,7 @@ jobs:
           fi
           "$GENERATE_APPCAST" \
             --ed-key-file "$SPARKLE_PRIVATE_KEY" \
-            --download-url-prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_VERSION}" \
+            --download-url-prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_VERSION}/" \
             "$APPCAST_INPUT"
           cp "$APPCAST_INPUT/appcast.xml" website/updates/appcast.xml
 
