@@ -3,9 +3,9 @@
 # It is not an app runtime dependency and must not be added to Package.swift.
 #
 # coremltools 4.x is the last stable Core ML Tools line documented with the
-# direct ct.converters.onnx path. It depends on NumPy < 1.20, which is not
-# binary-compatible with the Python 3.11/3.12 interpreters observed locally.
-coremltools==4.1
+# direct ct.converters.onnx path. The helper installs coremltools==4.1
+# separately because its legacy macosx_*_intel wheel tags are not always
+# discovered by modern pip on newer macOS runner images.
 onnx==1.13.1
 protobuf==3.20.3
 numpy>=1.14.5,<1.20

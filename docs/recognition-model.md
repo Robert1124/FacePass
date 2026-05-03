@@ -82,7 +82,7 @@ Then build or verify the app:
 ./script/build_and_run.sh
 ```
 
-Python compatibility note: the legacy conversion requirements use `coremltools==4.1`, which depends on `numpy>=1.14.5,<1.20`. That dependency range is not binary-compatible with the Python 3.9/3.11/3.12 interpreters observed in current local and GitHub Actions environments. Use a Python 3.8 interpreter for `FACEPASS_PHASE8_LEGACY_PYTHON` unless the legacy dependency stack has been revalidated.
+Python compatibility note: the legacy conversion path uses `coremltools==4.1`, which depends on `numpy>=1.14.5,<1.20`. That dependency range is not binary-compatible with the Python 3.9/3.11/3.12 interpreters observed in current local and GitHub Actions environments. Use a Python 3.8 interpreter for `FACEPASS_PHASE8_LEGACY_PYTHON` unless the legacy dependency stack has been revalidated. On Intel macOS runners, the helper can fall back to the pinned official `coremltools-4.1` cp38 Intel wheel if modern pip does not discover the legacy wheel tag.
 
 The model files are intentionally not committed to this source repository:
 

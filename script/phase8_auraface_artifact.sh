@@ -20,6 +20,7 @@ LEGACY_REQUIREMENTS_PATH="$ROOT_DIR/script/phase8-legacy-conversion-requirements
 LEGACY_COREML_DIR="$ARTIFACT_DIR/coreml-legacy"
 LEGACY_MLMODEL_PATH="$LEGACY_COREML_DIR/glintr100-legacy.mlmodel"
 LEGACY_OPSET10_ONNX_PATH="$ARTIFACT_DIR/glintr100-opset10-derived.onnx"
+LEGACY_COREMLTOOLS_WHEEL_URL="https://files.pythonhosted.org/packages/86/6d/4c3bfb5581af66b186ea3c43c7458ba65136f0fb19ac01b9cd8fa51cfbcd/coremltools-4.1-cp38-none-macosx_10_16_intel.whl"
 EXPECTED_LEGACY_MLMODEL_SHA256="8e3204d64aad48970c91be2b697d9fb1e88611eded49d5adc49c1fe9453bb3d9"
 EXPECTED_LEGACY_MLMODEL_SIZE="260665538"
 PYTHON_BIN="${FACEPASS_PHASE8_PYTHON:-python3}"
@@ -242,6 +243,7 @@ legacy_spike() {
     echo "Stopping before conversion; no ONNX-derived or Core ML artifact was generated." >&2
     exit 2
   fi
+  install_legacy_coremltools
 
   "$LEGACY_VENV_DIR/bin/python" - "$ONNX_PATH" "$LEGACY_MLMODEL_PATH" "$LEGACY_OPSET10_ONNX_PATH" <<'PY'
 import hashlib
@@ -328,6 +330,54 @@ select_legacy_python() {
 
   echo "Legacy conversion requires Python 3.8. Set FACEPASS_PHASE8_LEGACY_PYTHON to a compatible interpreter." >&2
   exit 1
+}
+
+install_legacy_coremltools() {
+  if "$LEGACY_VENV_DIR/bin/python" - <<'PY' >/dev/null 2>&1
+import coremltools as ct
+raise SystemExit(0 if ct.__version__ == "4.1" else 1)
+PY
+  then
+    return
+  fi
+
+  if PIP_CACHE_DIR="$LEGACY_PIP_CACHE_DIR" "$LEGACY_VENV_DIR/bin/python" -m pip install --only-binary=:all: 'coremltools==4.1'; then
+    return
+  fi
+
+  if [[ "$(uname -m)" != "x86_64" ]]; then
+    echo "coremltools==4.1 was not installable through pip, and the manual legacy wheel fallback requires x86_64 macOS." >&2
+    exit 2
+  fi
+
+  echo "pip did not accept the legacy coremltools==4.1 wheel tag; installing the pinned official cp38 Intel wheel manually."
+  local wheel_dir wheel_path site_packages
+  wheel_dir="$(mktemp -d "${TMPDIR:-/tmp}/facepass-coremltools-wheel.XXXXXX")"
+  wheel_path="$wheel_dir/coremltools-4.1-cp38-none-macosx_10_16_intel.whl"
+  curl --fail --location --proto '=https' --tlsv1.2 --output "$wheel_path" "$LEGACY_COREMLTOOLS_WHEEL_URL"
+  site_packages="$("$LEGACY_VENV_DIR/bin/python" - <<'PY'
+import site
+print(site.getsitepackages()[0])
+PY
+)"
+  "$LEGACY_VENV_DIR/bin/python" - "$wheel_path" "$site_packages" <<'PY'
+import pathlib
+import sys
+import zipfile
+
+wheel = pathlib.Path(sys.argv[1])
+site_packages = pathlib.Path(sys.argv[2])
+with zipfile.ZipFile(wheel) as archive:
+    archive.extractall(site_packages)
+print(f"Installed {wheel.name} into {site_packages}")
+PY
+  rm -rf "$wheel_dir"
+  "$LEGACY_VENV_DIR/bin/python" - <<'PY'
+import coremltools as ct
+if ct.__version__ != "4.1":
+    raise SystemExit(f"Unexpected coremltools version: {ct.__version__}")
+print(f"coremltools manual install verified: {ct.__version__}")
+PY
 }
 
 checksum_coreml() {
