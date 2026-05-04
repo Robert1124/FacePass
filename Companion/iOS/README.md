@@ -173,6 +173,8 @@ Real-device manual verification is still required for:
 
 The public distribution path for the iOS companion should be App Store release, with TestFlight for beta testing. Ad Hoc builds, Apple Development signing, direct device installs from Xcode, Apple Developer Enterprise Program distribution, and sideloading are not appropriate public distribution channels for this companion. Keep those alternatives limited to development, registered-device testing, or organization-internal cases where Apple's rules allow them.
 
+The app and widget Info.plist files set `ITSAppUsesNonExemptEncryption` to `NO`. This records that the companion uses no non-exempt encryption for App Store Connect export-compliance purposes, so new uploads should not require the recurring encryption questionnaire. If future work adds non-exempt cryptography or external encrypted transport beyond the current local signed-request, Keychain, and system-networking boundaries, revisit this value before upload.
+
 The companion's distribution story is separate from the Mac app. Public macOS releases should use Developer ID-signed and notarized website/direct-download distribution. The iOS companion should not be documented as a workaround for distributing the Mac app, and the Mac app should remain responsible for all password access and unlock policy checks.
 
 ## App Review Notes Draft
