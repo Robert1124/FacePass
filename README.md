@@ -22,6 +22,41 @@ For unlocked prompts, including administrator/System Settings prompts and Apple 
 
 For the lock screen, you can enable local recognition unlock, iPhone StandBy Unlock, or both. The Unlock Mode settings can also route lock-screen unlock to local recognition while allowing the paired iPhone to fill approved unlocked prompts. iPhone StandBy Unlock is a separate provider. It is not a supplement to Mac local recognition and does not use the Mac camera.
 
+## Visual Overview
+
+The diagrams below summarize the current FacePass request flow. They are not Apple Face ID, Touch ID, or a replacement for macOS authentication.
+
+```mermaid
+flowchart LR
+  A["Locked macOS session"] --> B["Unlock Mode allows local recognition"]
+  B --> C["Short camera recognition window"]
+  C --> D["Local encrypted template match"]
+  D --> E["Read password through Keychain boundary"]
+  E --> F["Type password and press Return only while still locked"]
+  C -. "camera stops on success, timeout, cancellation, or failure" .-> G["No persistent camera"]
+```
+
+```mermaid
+flowchart LR
+  A["iPhone device authentication"] --> B["Signed local request"]
+  B --> C["Cached endpoint, Bonjour rediscovery, or bounded nearby-port recovery"]
+  C --> D["Mac verifies paired key, IDs, timestamp, replay, counter, and policy"]
+  D --> E{"Mac state"}
+  E -->|"locked"| F["Wake display and use locked-session typing path"]
+  E -->|"approved prompt"| G["Fill password value only"]
+  B -. "never includes Mac password or face data" .-> H["iPhone approval signal only"]
+```
+
+```mermaid
+flowchart LR
+  A["Approved Apple authorization prompt"] --> B["Allowlist, title, prompt text, and context checks"]
+  B --> C["Exactly one enabled secure password field"]
+  C --> D["Approved provider passes"]
+  D --> E["Fill password value only"]
+  E --> F["No click, no submit, no Return"]
+  B -. "ordinary webpages and app password fields are rejected" .-> G["Fail closed"]
+```
+
 ## What It Is Not
 
 FacePass is not Apple Face ID, Touch ID, or a replacement for macOS authentication.

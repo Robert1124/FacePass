@@ -22,6 +22,41 @@ FacePass 当前只支持三个狭窄目标，并提供可配置的 provider rout
 
 锁屏场景中，你可以开启本地识别解锁、iPhone StandBy Unlock，或同时开启两者。Unlock Mode 设置也可以把锁屏解锁交给本地识别，同时允许已配对 iPhone 只处理被批准的已解锁提示密码填充。iPhone StandBy Unlock 是独立 provider，不是 Mac 本地识别的补充，也不使用 Mac 摄像头。
 
+## 图示概览
+
+下面的流程图概括当前 FacePass 请求链路。它们不是 Apple Face ID、Touch ID，也不是 macOS 系统认证替代品。
+
+```mermaid
+flowchart LR
+  A["macOS 已锁定"] --> B["Unlock Mode 允许本地识别"]
+  B --> C["短时摄像头识别窗口"]
+  C --> D["匹配本地加密模板"]
+  D --> E["通过 Keychain 边界读取密码"]
+  E --> F["仍处于锁屏时输入密码并按 Return"]
+  C -. "成功、超时、取消或失败后停止摄像头" .-> G["不持久运行摄像头"]
+```
+
+```mermaid
+flowchart LR
+  A["iPhone 本机认证"] --> B["签名本地请求"]
+  B --> C["缓存端点、Bonjour 重新发现或有限附近端口恢复"]
+  C --> D["Mac 验证配对密钥、设备 ID、时间戳、重放、计数器和策略"]
+  D --> E{"Mac 状态"}
+  E -->|"锁屏"| F["唤醒显示器并使用锁屏输入路径"]
+  E -->|"已批准提示"| G["只填入密码值"]
+  B -. "不包含 Mac 密码或人脸数据" .-> H["iPhone 只是批准信号"]
+```
+
+```mermaid
+flowchart LR
+  A["已批准的 Apple 授权提示"] --> B["允许列表、标题、提示文本和上下文检查"]
+  B --> C["只有一个启用的安全密码字段"]
+  C --> D["批准的 provider 通过"]
+  D --> E["只填入密码值"]
+  E --> F["不点击、不提交、不按 Return"]
+  B -. "普通网页和 app 密码字段会被拒绝" .-> G["默认拒绝"]
+```
+
 ## 它不是什么
 
 FacePass 不是 Apple Face ID、Touch ID，也不是 macOS 系统认证的替代品。
@@ -125,7 +160,7 @@ setup 脚本可能会下载 pinned AuraFace `glintr100.onnx`，验证文件，�
 
 ## 分发状态
 
-FacePass 仍可从源码构建。macOS app 的正式公开发布包是托管在 GitHub Releases 上的 Developer ID 签名并 notarized 的 DMG，并使用 Sparkle 2 检查更新。Sparkle feed URL 是 `https://facepass.app/updates/appcast.xml`；appcast 由官网托管在 `/updates` 路径下，DMG release packages 托管在 GitHub Releases。Sparkle 只是 appcast/package download 通道，不是 telemetry、后台账号服务、cloud sync 或解锁服务器。
+FacePass 仍可从源码构建。macOS app 的正式公开发布包是托管在 GitHub Releases 上的 Developer ID 签名并 notarized 的 DMG，并使用 Sparkle 2 检查更新。Sparkle feed URL 是 `https://facepass.robertw.me/updates/appcast.xml`；appcast 由官网托管在 `/updates` 路径下，DMG release packages 托管在 GitHub Releases。Sparkle 只是 appcast/package download 通道，不是 telemetry、后台账号服务、cloud sync 或解锁服务器。
 
 正式面向用户的 DMG package 应在配置好 credentials/secrets 后由 tag-triggered GitHub Actions release workflow 生成。`v*` tags 和显式 `workflow_dispatch` run 是正式 release 路径；普通 push 不应发布面向用户的 release。本地 packaging 只用于 dry-run 和验证。
 

@@ -861,6 +861,69 @@ p {
   margin-top: 16px;
 }
 
+.doc-callout {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: var(--radius-sm);
+  background: #f4f8ff;
+  color: var(--ink);
+}
+
+.protocol-map {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.protocol-map section {
+  position: relative;
+  display: grid;
+  align-content: start;
+  min-height: 158px;
+  padding: 18px;
+  border: 1px solid rgba(0, 113, 227, 0.12);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(180deg, rgba(0, 113, 227, 0.06), rgba(255, 255, 255, 0)),
+    var(--white);
+}
+
+.protocol-map section:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 31px;
+  right: -11px;
+  width: 20px;
+  height: 2px;
+  background: rgba(0, 113, 227, 0.28);
+}
+
+.protocol-map span {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.protocol-map h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.protocol-map p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.48;
+}
+
 pre {
   position: relative;
   overflow-x: auto;
@@ -1344,7 +1407,8 @@ summary {
   .flow-list,
   .feature-grid,
   .doc-grid,
-  .faq-list {
+  .faq-list,
+  .protocol-map {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1355,6 +1419,10 @@ summary {
   .privacy-statements {
     grid-template-columns: 1fr;
     max-width: 680px;
+  }
+
+  .protocol-map section:not(:last-child)::after {
+    content: none;
   }
 }
 
@@ -1458,8 +1526,19 @@ summary {
   .flow-list,
   .feature-grid,
   .doc-grid,
-  .faq-list {
+  .faq-list,
+  .protocol-map {
     grid-template-columns: 1fr;
+  }
+
+  .protocol-map section:not(:last-child)::after {
+    content: "";
+    top: auto;
+    right: auto;
+    bottom: -10px;
+    left: 31px;
+    width: 2px;
+    height: 20px;
   }
 
   .boundary-card,

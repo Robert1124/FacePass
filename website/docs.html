@@ -36,6 +36,7 @@
       <section class="docs-layout docs-page section-light">
         <aside class="docs-index" data-reveal>
           <a href="#start" data-en="How to Start" data-zh="如何开始">How to Start</a>
+          <a href="#visuals" data-en="Visual Guide" data-zh="图示">Visual Guide</a>
           <a href="#permissions" data-en="Permissions" data-zh="权限">Permissions</a>
           <a href="#use" data-en="How to Use" data-zh="如何使用">How to Use</a>
           <a href="#standby" data-en="iPhone StandBy" data-zh="iPhone StandBy">iPhone StandBy</a>
@@ -95,6 +96,33 @@ swift --version</code></pre>
               <section>
                 <h3 data-en="9. Keep the safety boundaries intact" data-zh="9. 保持安全边界">9. Keep the safety boundaries intact</h3>
                 <p data-en="Do not add telemetry, cloud sync, persistent camera behavior, ordinary password-field targeting, or prompt auto-submit behavior. Do not recommend Always Allow for Keychain prompts." data-zh="不要添加遥测、云同步、持久摄像头行为、普通密码框目标，或授权提示自动提交行为。不要建议对钥匙串提示使用“始终允许”。">Do not add telemetry, cloud sync, persistent camera behavior, ordinary password-field targeting, or prompt auto-submit behavior. Do not recommend Always Allow for Keychain prompts.</p>
+              </section>
+            </div>
+          </article>
+
+          <article class="doc-panel" id="visuals" data-reveal>
+            <h2 data-en="Visual Guide" data-zh="图示">Visual Guide</h2>
+            <p data-en="These visuals show the current product surfaces and request flow. They are product visualizations, not Apple Face ID, Touch ID, or system authentication replacement screens." data-zh="这些图示展示当前产品界面和请求链路。它们是产品可视化，不是 Apple Face ID、Touch ID 或系统认证替代界面。">These visuals show the current product surfaces and request flow. They are product visualizations, not Apple Face ID, Touch ID, or system authentication replacement screens.</p>
+            <div class="protocol-map" aria-label="FacePass local request flow">
+              <section>
+                <span>1</span>
+                <h3 data-en="Approve Locally" data-zh="本地批准">Approve Locally</h3>
+                <p data-en="The iPhone uses local device authentication before sending a signed request." data-zh="iPhone 先完成本机认证，然后发送签名请求。">The iPhone uses local device authentication before sending a signed request.</p>
+              </section>
+              <section>
+                <span>2</span>
+                <h3 data-en="Rediscover Nearby" data-zh="附近重新发现">Rediscover Nearby</h3>
+                <p data-en="The app tries the cached endpoint, Bonjour metadata, and bounded nearby-port recovery." data-zh="app 会尝试缓存端点、Bonjour 元数据，以及有限附近端口恢复。">The app tries the cached endpoint, Bonjour metadata, and bounded nearby-port recovery.</p>
+              </section>
+              <section>
+                <span>3</span>
+                <h3 data-en="Verify on Mac" data-zh="Mac 侧验证">Verify on Mac</h3>
+                <p data-en="The Mac checks paired key, device IDs, timestamp, replay cache, counter, enabled state, and provider policy." data-zh="Mac 检查配对密钥、设备 ID、时间戳、重放缓存、计数器、启用状态和 provider policy。">The Mac checks paired key, device IDs, timestamp, replay cache, counter, enabled state, and provider policy.</p>
+              </section>
+              <section>
+                <span>4</span>
+                <h3 data-en="Act Narrowly" data-zh="窄范围执行">Act Narrowly</h3>
+                <p data-en="Locked sessions use the lock-screen typing path. Approved prompts receive value-only fill with no click, submit, or Return." data-zh="锁屏会话使用锁屏输入路径。已批准提示只接收密码值填充，不点击、不提交、不按 Return。">Locked sessions use the lock-screen typing path. Approved prompts receive value-only fill with no click, submit, or Return.</p>
               </section>
             </div>
           </article>
@@ -165,6 +193,7 @@ swift --version</code></pre>
 
           <article class="doc-panel" id="standby" data-reveal>
             <h2 data-en="iPhone StandBy Unlock" data-zh="iPhone StandBy Unlock">iPhone StandBy Unlock</h2>
+            <p class="doc-callout" data-en="The iPhone companion TestFlight external build is currently Waiting for Review. Public-link testing becomes joinable after Apple approves this build." data-zh="iPhone companion 的 TestFlight external build 当前为 Waiting for Review。Apple 批准该 build 后，public link 测试才可以加入。">The iPhone companion TestFlight external build is currently Waiting for Review. Public-link testing becomes joinable after Apple approves this build.</p>
             <p data-en="The independent iPhone path relies on the user approving from a paired iPhone surface such as StandBy, Live Activity, Dynamic Island, AppIntent, or a static widget. The request is a signed local approval signal; the iPhone never receives the Mac password, Mac face data, or Mac camera frames." data-zh="独立 iPhone 路径依赖用户从已配对 iPhone 界面批准，例如 StandBy、Live Activity、Dynamic Island、AppIntent 或静态小组件。该请求是签名的本地批准信号；iPhone 绝不会接收 Mac 密码、Mac 人脸数据或 Mac 摄像头帧。">The independent iPhone path relies on the user approving from a paired iPhone surface such as StandBy, Live Activity, Dynamic Island, AppIntent, or a static widget. The request is a signed local approval signal; the iPhone never receives the Mac password, Mac face data, or Mac camera frames.</p>
             <p data-en="Pairing and rediscovery use local HTTP with Bonjour metadata and QR-provided direct local endpoints when available. Endpoint scope is limited to /v1/status, /v1/pair, and /v1/standby-unlock." data-zh="配对和重新发现使用本地 HTTP、Bonjour 元数据，以及在可用时由二维码提供的直接本地端点。端点范围限制为 /v1/status、/v1/pair 和 /v1/standby-unlock。">Pairing and rediscovery use local HTTP with Bonjour metadata and QR-provided direct local endpoints when available. Endpoint scope is limited to /v1/status, /v1/pair, and /v1/standby-unlock.</p>
             <p data-en="When the Mac is locked and provider policy allows iPhone approval, a valid signed request can wake the display and use the same locked-session password typing path. When the Mac is unlocked and provider policy allows iPhone prompt fill, a valid request can fill only an approved administrator/System Settings password field without clicking or submitting." data-zh="当 Mac 已锁定且提供方策略允许 iPhone 批准时，有效签名请求可唤醒显示器并使用同一锁定会话密码输入路径。当 Mac 已解锁且提供方策略允许 iPhone 提示填充时，有效请求只能填充已批准的管理员/“系统设置”密码字段，不会点击或提交。">When the Mac is locked and provider policy allows iPhone approval, a valid signed request can wake the display and use the same locked-session password typing path. When the Mac is unlocked and provider policy allows iPhone prompt fill, a valid request can fill only an approved administrator/System Settings password field without clicking or submitting.</p>
