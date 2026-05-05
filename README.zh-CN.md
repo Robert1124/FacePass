@@ -29,25 +29,6 @@ FacePass 不支持普通网页或普通 app 的密码输入框。当前范围只
 
 普通 LocalAuthentication 提示仍然会被拒绝。
 
-## 当前功能
-
-- 原生 macOS 13+ Swift/SwiftUI 菜单栏应用
-- 设置窗口：设置、自动化、解锁模式、iPhone 配对、识别、状态
-- 密码只存储在 macOS Keychain
-- 首次启动设置流程：Camera 和 Accessibility 权限
-- 短时间摄像头会话，只在需要识别时启动
-- 单一本地 enrollment template，可包含多条本地 embedding
-- 可调节 recognition similarity threshold，默认使用当前推荐值
-- 可选锁屏解锁辅助
-- 独立的 iPhone StandBy Unlock provider，用于已配对设备的本地 approval
-- 管理员/System Settings 提示检测，以及只填密码值
-- 自动操作条件：
-  - Wi-Fi 已连接
-  - 外接显示器已连接
-  - 电源状态
-  - 任意/全部条件匹配
-
-
 ## 设置方式
 
 请从[官网设置指南](https://facepass.robertw.me/docs.html#start)开始。它覆盖 DMG 和源码安装、应用内权限、Keychain 密码保存、识别登记和 Unlock Mode 设置。

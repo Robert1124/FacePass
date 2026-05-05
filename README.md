@@ -29,25 +29,6 @@ FacePass does not support ordinary website or app password fields. It is intenti
 
 Generic LocalAuthentication prompts remain rejected.
 
-## Current Features
-
-- Native macOS 13+ Swift/SwiftUI menu-bar app
-- Settings window with setup, automation, unlock mode, iPhone pairing, recognition, and status sections
-- Keychain-backed password storage
-- First-run setup flow for Camera and Accessibility permissions
-- Short-lived camera sessions for local recognition
-- Single local enrollment template with multiple local embeddings
-- User-adjustable recognition similarity threshold, defaulting to the recommended local prototype value
-- Lock-screen assist with opt-in recognition gate
-- Independent iPhone StandBy Unlock provider for paired local approval
-- Administrator/System Settings prompt detection with value-only fill
-- Automation conditions for automatic actions:
-  - Wi-Fi connected
-  - External monitor connected
-  - Power state
-  - Any/All selected condition matching
-
-
 ## Setup
 
 Start with the [official website setup guide](https://facepass.robertw.me/docs.html#start). It covers DMG and source installs, plus in-app permissions, Keychain password storage, recognition enrollment, and Unlock Mode setup.
