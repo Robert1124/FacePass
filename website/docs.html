@@ -36,6 +36,7 @@
       <section class="docs-layout docs-page section-light">
         <aside class="docs-index" data-reveal>
           <a href="#start" data-en="How to Start" data-zh="如何开始">How to Start</a>
+          <a href="#build-from-source" data-en="Build From Source" data-zh="从源码构建">Build From Source</a>
           <a href="#visuals" data-en="Visual Guide" data-zh="图示">Visual Guide</a>
           <a href="#permissions" data-en="Permissions" data-zh="权限">Permissions</a>
           <a href="#use" data-en="How to Use" data-zh="如何使用">How to Use</a>
@@ -50,52 +51,42 @@
         <div class="docs-content">
           <article class="doc-panel" id="start" data-reveal>
             <h2 data-en="How to Start" data-zh="如何开始">How to Start</h2>
-            <div class="doc-steps">
-              <section>
-                <h3 data-en="1. For normal users, download the signed DMG" data-zh="1. 普通用户下载已签名 DMG">1. For normal users, download the signed DMG</h3>
-                <p data-en="Download the latest Developer ID-signed and notarized macOS DMG from GitHub Releases or the website download link. The official user-facing Mac package is the release DMG, not a development ZIP." data-zh="从 GitHub Releases 或官网下载链接下载最新的 Developer ID 签名并公证的 macOS DMG。正式面向用户的 Mac package 是 release DMG，不是开发用 ZIP。">Download the latest Developer ID-signed and notarized macOS DMG from GitHub Releases or the website download link. The official user-facing Mac package is the release DMG, not a development ZIP.</p>
+            <div class="start-options">
+              <section class="start-option-card">
+                <p class="eyebrow" data-en="Option 1" data-zh="选项 1">Option 1</p>
+                <h3 data-en="Direct DMG download" data-zh="直接下载 DMG">Direct DMG download</h3>
+                <p data-en="For normal use, download the latest Developer ID-signed and notarized macOS DMG from GitHub Releases or the website download link. The official user-facing Mac package is the release DMG, not a development ZIP." data-zh="普通使用时，请从 GitHub Releases 或官网下载链接下载最新的 Developer ID 签名并公证的 macOS DMG。正式面向用户的 Mac package 是 release DMG，不是开发用 ZIP。">For normal use, download the latest Developer ID-signed and notarized macOS DMG from GitHub Releases or the website download link. The official user-facing Mac package is the release DMG, not a development ZIP.</p>
+                <ul class="check-list compact">
+                  <li data-en="Open the DMG and install FacePass." data-zh="打开 DMG 并安装 FacePass。">Open the DMG and install FacePass.</li>
+                  <li data-en="Launch FacePass from Applications or the installed app location." data-zh="从“应用程序”或已安装的 app 位置启动 FacePass。">Launch FacePass from Applications or the installed app location.</li>
+                  <li data-en="Complete the in-app setup for Camera, Accessibility, Keychain password storage, Unlock Mode, and optional iPhone StandBy Unlock." data-zh="在 app 内完成摄像头、辅助功能、钥匙串密码存储、解锁模式，以及可选 iPhone StandBy Unlock 设置。">Complete the in-app setup for Camera, Accessibility, Keychain password storage, Unlock Mode, and optional iPhone StandBy Unlock.</li>
+                </ul>
                 <div class="doc-actions">
                   <a class="button button-download" href="https://github.com/Robert1124/FacePass/releases" data-en="Download Mac DMG" data-zh="下载 Mac DMG">Download Mac DMG</a>
                 </div>
               </section>
-              <section>
-                <h3 data-en="2. Install and open FacePass" data-zh="2. 安装并打开 FacePass">2. Install and open FacePass</h3>
-                <p data-en="Open the downloaded DMG, install FacePass, and launch it from Applications or the installed app location. Use only public DMG packages produced by the signed and notarized release workflow, not unsigned local archives." data-zh="打开下载的 DMG，安装 FacePass，并从“应用程序”或已安装的 app 位置启动。只使用由签名并公证的发布流程生成的公开 DMG package，不要把未签名的本地归档当作公开发布版本。">Open the downloaded DMG, install FacePass, and launch it from Applications or the installed app location. Use only public DMG packages produced by the signed and notarized release workflow, not unsigned local archives.</p>
-              </section>
-              <section>
-                <h3 data-en="3. For developers, clone the repository" data-zh="3. 开发者克隆仓库">3. For developers, clone the repository</h3>
-                <p data-en="To self-compile from source, clone FacePass from GitHub and enter the project directory." data-zh="如需从源码自行编译，请从 GitHub 克隆 FacePass，并进入项目目录。">To self-compile from source, clone FacePass from GitHub and enter the project directory.</p>
+
+              <section class="start-option-card" id="build-from-source">
+                <p class="eyebrow" data-en="Option 2" data-zh="选项 2">Option 2</p>
+                <h3 data-en="Build from Source" data-zh="从源码构建">Build from Source</h3>
+                <p data-en="For development or local review, clone the repository and build FacePass yourself. Keep the same safety boundaries: no telemetry, no cloud sync, no persistent camera behavior, no ordinary password-field targeting, and no prompt auto-submit." data-zh="用于开发或本地审查时，可以克隆仓库并自行构建 FacePass。请保持相同安全边界：无遥测、无云同步、无持久摄像头行为、不支持普通密码框目标，并且不自动提交授权提示。">For development or local review, clone the repository and build FacePass yourself. Keep the same safety boundaries: no telemetry, no cloud sync, no persistent camera behavior, no ordinary password-field targeting, and no prompt auto-submit.</p>
+                <h4 data-en="Requirements" data-zh="环境要求">Requirements</h4>
+                <ul class="check-list compact">
+                  <li data-en="macOS 13 or later" data-zh="macOS 13 或更高版本">macOS 13 or later</li>
+                  <li data-en="Xcode command line tools" data-zh="Xcode 命令行工具">Xcode command line tools</li>
+                  <li data-en="Swift 5.9 or later" data-zh="Swift 5.9 或更高版本">Swift 5.9 or later</li>
+                </ul>
+                <h4 data-en="Clone" data-zh="克隆">Clone</h4>
                 <pre><code>git clone https://github.com/Robert1124/FacePass.git
 cd FacePass</code></pre>
-              </section>
-              <section>
-                <h3 data-en="4. Confirm source-build requirements" data-zh="4. 确认源码构建环境要求">4. Confirm source-build requirements</h3>
-                <p data-en="For self-compile work, use macOS 13 or later with Xcode command line tools and Swift 5.9 or later available." data-zh="自行编译时，请使用 macOS 13 或更高版本，并确保 Xcode 命令行工具和 Swift 5.9 或更高版本可用。">For self-compile work, use macOS 13 or later with Xcode command line tools and Swift 5.9 or later available.</p>
+                <h4 data-en="Verify tools" data-zh="验证工具">Verify tools</h4>
                 <pre><code>xcode-select -p
 swift --version</code></pre>
-              </section>
-              <section>
-                <h3 data-en="5. Build and launch locally" data-zh="5. 本地构建并启动">5. Build and launch locally</h3>
-                <p data-en="Run the setup script to prepare ignored local model artifacts when needed, build a physical app bundle, stage it, and launch FacePass." data-zh="运行设置脚本，在需要时准备被忽略的本地模型工件，构建实体 app bundle，暂存并启动 FacePass。">Run the setup script to prepare ignored local model artifacts when needed, build a physical app bundle, stage it, and launch FacePass.</p>
-                <pre><code>./script/setup_and_run.sh</code></pre>
-              </section>
-              <section>
-                <h3 data-en="6. Use verify-only mode when reviewing" data-zh="6. 审查时使用仅验证模式">6. Use verify-only mode when reviewing</h3>
-                <p data-en="Verify artifact preparation and the app build without launching the app." data-zh="验证工件准备和 app 构建，但不启动应用。">Verify artifact preparation and the app build without launching the app.</p>
-                <pre><code>./script/setup_and_run.sh --verify</code></pre>
-              </section>
-              <section>
-                <h3 data-en="7. Run tests" data-zh="7. 运行测试">7. Run tests</h3>
-                <p data-en="Run the Swift test suite after changes and before trusting sensitive flows." data-zh="修改后以及信任敏感流程前，运行 Swift 测试套件。">Run the Swift test suite after changes and before trusting sensitive flows.</p>
-                <pre><code>swift test</code></pre>
-              </section>
-              <section>
-                <h3 data-en="8. Review model artifact behavior" data-zh="8. 审查模型工件行为">8. Review model artifact behavior</h3>
-                <p data-en="The setup script may download and verify the pinned AuraFace glintr100.onnx artifact, convert through the documented legacy Core ML path, and keep generated artifacts under ignored Artifacts/. These files are not committed." data-zh="设置脚本可能会下载并验证固定的 AuraFace glintr100.onnx 工件，通过已记录的 legacy Core ML 路径转换，并将生成工件保留在被忽略的 Artifacts/ 下。这些文件不会提交。">The setup script may download and verify the pinned AuraFace glintr100.onnx artifact, convert through the documented legacy Core ML path, and keep generated artifacts under ignored Artifacts/. These files are not committed.</p>
-              </section>
-              <section>
-                <h3 data-en="9. Keep the safety boundaries intact" data-zh="9. 保持安全边界">9. Keep the safety boundaries intact</h3>
-                <p data-en="Do not add telemetry, cloud sync, persistent camera behavior, ordinary password-field targeting, or prompt auto-submit behavior. Do not recommend Always Allow for Keychain prompts." data-zh="不要添加遥测、云同步、持久摄像头行为、普通密码框目标，或授权提示自动提交行为。不要建议对钥匙串提示使用“始终允许”。">Do not add telemetry, cloud sync, persistent camera behavior, ordinary password-field targeting, or prompt auto-submit behavior. Do not recommend Always Allow for Keychain prompts.</p>
+                <h4 data-en="Verify, build, and test" data-zh="验证、构建和测试">Verify, build, and test</h4>
+                <p data-en="Use verify-only mode when reviewing, build and launch locally when you are ready to run the app, and run the Swift test suite after changes." data-zh="审查时使用仅验证模式；准备运行 app 时再本地构建并启动；修改后运行 Swift 测试套件。">Use verify-only mode when reviewing, build and launch locally when you are ready to run the app, and run the Swift test suite after changes.</p>
+                <pre><code>./script/setup_and_run.sh --verify
+./script/setup_and_run.sh
+swift test</code></pre>
               </section>
             </div>
           </article>

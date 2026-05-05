@@ -813,6 +813,12 @@ p {
   margin-top: 24px;
 }
 
+.doc-panel h4 {
+  margin: 20px 0 10px;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
 .doc-panel ol,
 .doc-panel ul:not(.check-list) {
   margin: 0;
@@ -852,6 +858,43 @@ p {
 .doc-steps h3,
 .doc-grid h3 {
   margin-top: 0;
+}
+
+.start-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.start-option-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid rgba(0, 113, 227, 0.1);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(180deg, rgba(0, 113, 227, 0.05), rgba(255, 255, 255, 0)),
+    var(--light);
+}
+
+.start-option-card h3 {
+  margin-top: 0;
+}
+
+.start-option-card .eyebrow {
+  margin-bottom: 8px;
+  color: var(--blue-dark);
+}
+
+.start-option-card .check-list {
+  gap: 8px;
+}
+
+.start-option-card .check-list li {
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.35;
 }
 
 .doc-actions {
