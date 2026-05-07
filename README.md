@@ -8,6 +8,8 @@ It is inspired by the idea of BLEUnlock, but it does not use BLEUnlock code. Fac
 
 [Official Website](https://facepass.robertw.me)
 
+[Join the iPhone Companion TestFlight](https://testflight.apple.com/join/p3zBMEBY)
+
 [中文说明](README.zh-CN.md)
 
 ## What It Does
@@ -36,6 +38,8 @@ Start with the [official website setup guide](https://facepass.robertw.me/docs.h
 ## iPhone StandBy Unlock
 
 iPhone StandBy Unlock lets a paired iPhone approve FacePass handling without running Mac local recognition. It is a separate provider that can be routed by Unlock Mode for lock-screen assist, approved administrator/System Settings prompt fill, or both.
+
+The iPhone companion is available for external TestFlight testing: [Join FacePass on TestFlight](https://testflight.apple.com/join/p3zBMEBY).
 
 - When the Mac is locked, a valid paired-iPhone approval can wake the display and use the same locked-session password typing path.
 - When the Mac is unlocked and an approved administrator/System Settings prompt is present, a valid paired-iPhone approval can fill only the password value with no click, submit, or Return.

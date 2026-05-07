@@ -8,6 +8,8 @@ FacePass 是一个原生 macOS 菜单栏辅助工具，用于在你自己的 Mac
 
 [官方网站](https://facepass.robertw.me)
 
+[加入 iPhone Companion TestFlight](https://testflight.apple.com/join/p3zBMEBY)
+
 [English README](README.md)
 
 ## 它能做什么
@@ -36,6 +38,8 @@ FacePass 不支持普通网页或普通 app 的密码输入框。当前范围只
 ## iPhone StandBy Unlock
 
 iPhone StandBy Unlock 允许已配对 iPhone approval 触发 FacePass 处理，而不运行 Mac 本地识别。它是一个独立 provider，可以通过 Unlock Mode 路由到锁屏辅助、被批准的管理员/System Settings 提示填充，或两者。
+
+iPhone companion 已开放 external TestFlight 测试：[加入 FacePass TestFlight](https://testflight.apple.com/join/p3zBMEBY)。
 
 - Mac 锁屏时，有效的已配对 iPhone approval 可以唤醒显示器，并使用同一条锁屏密码输入路径。
 - Mac 已解锁且存在被批准的管理员/System Settings 提示时，有效的已配对 iPhone approval 只能填入密码值，不点击、不提交、不按 Return。
