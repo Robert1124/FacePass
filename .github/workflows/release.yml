@@ -249,8 +249,14 @@ jobs:
         run: |
           set -euo pipefail
           PACKAGE="dist/release/FacePass-${RELEASE_VERSION#v}.dmg"
-          gh release view "$RELEASE_VERSION" >/dev/null 2>&1 || \
+          RELEASE_NOTES=".github/releases/${RELEASE_VERSION}.md"
+          if gh release view "$RELEASE_VERSION" >/dev/null 2>&1; then
+            echo "GitHub Release $RELEASE_VERSION already exists."
+          elif [[ -f "$RELEASE_NOTES" ]]; then
+            gh release create "$RELEASE_VERSION" --draft --title "$RELEASE_VERSION" --notes-file "$RELEASE_NOTES"
+          else
             gh release create "$RELEASE_VERSION" --draft --title "$RELEASE_VERSION" --notes "FacePass $RELEASE_VERSION"
+          fi
           gh release upload "$RELEASE_VERSION" "$PACKAGE" "$PACKAGE.sha256" --clobber
 
       - name: Generate Sparkle appcast draft

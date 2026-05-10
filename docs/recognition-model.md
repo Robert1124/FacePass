@@ -115,7 +115,7 @@ If you redistribute model artifacts or binaries that include them, review the up
 - Enrollment stores encrypted local template data, not raw photos.
 - Observe, lock-screen, and authorization-prompt recognition can evaluate multiple visible face candidates against the single stored template.
 - Enrollment capture still expects one valid face per capture.
-- Sensitive lock-screen and approved administrator/System Settings prompt recognition gates run for up to 10 seconds by default and return as soon as recognition succeeds within that window.
+- Sensitive lock-screen and approved administrator/System Settings prompt recognition gates wait up to 10 seconds by default for the first accepted local match. After the first accepted match, FacePass may take short immediate follow-up captures to collect the remaining required match, preserving the existing two-match gate before returning immediately.
 - Recognition camera capture stops after success, failure, timeout, or cancellation.
 
 ## Current Limitations

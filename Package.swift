@@ -34,6 +34,10 @@ let package = Package(
         .testTarget(
             name: "FacePassCoreTests",
             dependencies: ["FacePassCore"]
+        ),
+        .testTarget(
+            name: "FacePassTests",
+            dependencies: ["FacePass"]
         )
     ]
 )

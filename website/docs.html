@@ -128,7 +128,7 @@ swift test</code></pre>
                   <circle cx="14" cy="15" r="4.2"></circle>
                 </svg>
                 <h3 data-en="Camera" data-zh="摄像头">Camera</h3>
-                <p data-en="Used for short local recognition windows. Sensitive lock-screen and approved prompt gates can run for up to 10 seconds, return as soon as recognition succeeds, and stop capture after success, timeout, cancellation, or failure." data-zh="用于短时本地识别窗口。敏感锁屏和已批准提示 gate 最多可运行 10 秒，会在识别成功后立即返回，并在成功、超时、取消或失败后停止采集。">Used for short local recognition windows. Sensitive lock-screen and approved prompt gates can run for up to 10 seconds, return as soon as recognition succeeds, and stop capture after success, timeout, cancellation, or failure.</p>
+                <p data-en="Used for short local recognition windows. Sensitive lock-screen and approved prompt gates wait up to 10 seconds for the first accepted local match, may use short follow-up captures for the remaining required match before returning immediately, and stop capture after success, timeout, cancellation, or failure." data-zh="用于短时本地识别窗口。敏感锁屏和已批准提示 gate 最多等待 10 秒获取第一次通过的本地匹配，可用短暂后续采集取得剩余的必需匹配后立即返回，并在成功、超时、取消或失败后停止采集。">Used for short local recognition windows. Sensitive lock-screen and approved prompt gates wait up to 10 seconds for the first accepted local match, may use short follow-up captures for the remaining required match before returning immediately, and stop capture after success, timeout, cancellation, or failure.</p>
               </section>
               <section>
                 <svg class="permission-icon" viewBox="0 0 28 28" aria-hidden="true">
@@ -158,7 +158,7 @@ swift test</code></pre>
               </section>
               <section>
                 <h3 data-en="2. Grant only required permissions" data-zh="2. 仅授予所需权限">2. Grant only required permissions</h3>
-                <p data-en="Grant Camera for short local recognition windows and Accessibility for approved macOS prompt fill or the locked-session typing path. Sensitive recognition gates can run for up to 10 seconds and should not run without these explicit permissions." data-zh="授予摄像头权限用于短时本地识别窗口，授予辅助功能权限用于已批准的 macOS 提示填充或锁定会话输入路径。敏感识别 gate 最多可运行 10 秒，且没有这些明确权限时不应运行。">Grant Camera for short local recognition windows and Accessibility for approved macOS prompt fill or the locked-session typing path. Sensitive recognition gates can run for up to 10 seconds and should not run without these explicit permissions.</p>
+                <p data-en="Grant Camera for short local recognition windows and Accessibility for approved macOS prompt fill or the locked-session typing path. Sensitive recognition gates wait up to 10 seconds for the first accepted local match, may still require a short follow-up capture for the remaining match, and should not run without these explicit permissions." data-zh="授予摄像头权限用于短时本地识别窗口，授予辅助功能权限用于已批准的 macOS 提示填充或锁定会话输入路径。敏感识别 gate 最多等待 10 秒获取第一次通过的本地匹配，之后仍可能需要短暂后续采集取得剩余匹配，且没有这些明确权限时不应运行。">Grant Camera for short local recognition windows and Accessibility for approved macOS prompt fill or the locked-session typing path. Sensitive recognition gates wait up to 10 seconds for the first accepted local match, may still require a short follow-up capture for the remaining match, and should not run without these explicit permissions.</p>
               </section>
               <section>
                 <h3 data-en="3. Set up the Keychain password" data-zh="3. 设置钥匙串密码">3. Set up the Keychain password</h3>

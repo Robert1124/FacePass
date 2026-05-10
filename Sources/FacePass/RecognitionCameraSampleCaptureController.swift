@@ -312,7 +312,9 @@ final class RecognitionCameraSampleCaptureController: NSObject, FaceRecognitionM
             runState.recordCapturedSample(FaceSampleCaptureSummary(
                 samples: samples,
                 processedFrameCount: processedFrameCount
-            ))
+            )) { [weak self] result in
+                self?.finishCapture(result)
+            }
         } catch {
             runState.finish(.failed(.faceDetectionFailed)) { [weak self] result in
                 self?.finishCapture(result)
@@ -343,7 +345,7 @@ private enum RecognitionCameraCaptureError: Error {
     case cannotAddOutput
 }
 
-private final class RecognitionCameraSampleCaptureRunState: @unchecked Sendable {
+final class RecognitionCameraSampleCaptureRunState: @unchecked Sendable {
     let captureMode: FaceSampleCaptureMode
     private let lock = NSLock()
     private var continuation: CheckedContinuation<FaceSampleCaptureResult, Never>?
@@ -417,16 +419,40 @@ private final class RecognitionCameraSampleCaptureRunState: @unchecked Sendable 
         lock.unlock()
     }
 
-    func recordCapturedSample(_ summary: FaceSampleCaptureSummary) {
+    func recordCapturedSample(
+        _ summary: FaceSampleCaptureSummary,
+        cleanup: @escaping (FaceSampleCaptureResult) -> Void = { _ in }
+    ) {
+        var continuationToResume: CheckedContinuation<FaceSampleCaptureResult, Never>?
+        var timeoutTaskToCancel: Task<Void, Never>?
+        let result: FaceSampleCaptureResult = .captured(summary)
+
         lock.lock()
         guard !isFinished else {
             lock.unlock()
             return
         }
 
-        latestCapturedSummary = summary
+        guard captureMode == .recognition else {
+            latestCapturedSummary = summary
+            isProcessingFrame = false
+            lock.unlock()
+            return
+        }
+
+        isFinished = true
         isProcessingFrame = false
+        completedResult = result
+        continuationToResume = continuation
+        continuation = nil
+        timeoutTaskToCancel = timeoutTask
+        timeoutTask = nil
+        latestCapturedSummary = nil
         lock.unlock()
+
+        timeoutTaskToCancel?.cancel()
+        cleanup(result)
+        continuationToResume?.resume(returning: result)
     }
 
     func finishAfterTimeout(

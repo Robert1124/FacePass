@@ -92,6 +92,7 @@ public final class FaceRecognitionRuntimeController {
     public static let maximumAllowedUnlockSimilarity: Float = 0.75
     private static let defaultUnlockRequiredAcceptedMatches = 2
     private static let defaultUnlockMaximumUsableFrames = 3
+    private static let defaultUnlockFollowUpCaptureTimeout: TimeInterval = defaultCaptureTimeout
     public static var defaultMaximumEnrollmentSampleCount: Int {
         FaceEnrollmentService<CoreMLFaceEmbeddingProvider>.defaultMinimumSampleCount
     }
@@ -440,18 +441,18 @@ public final class FaceRecognitionRuntimeController {
         let unlockCaptureTimeout = max(0, timeout)
         let unlockCaptureDeadline = currentTimeProvider() + unlockCaptureTimeout
         var hasRequestedUnlockCapture = false
+        var acceptedMatchCount = 0
         var frames: [FaceRecognitionFrame] = []
         var bestObservation: FaceRecognitionObservation?
 
         for _ in 0..<policy.maximumUsableFrames {
-            let remainingCaptureTimeout: TimeInterval
-            if hasRequestedUnlockCapture {
-                remainingCaptureTimeout = unlockCaptureTimeout.isFinite
-                    ? max(0, unlockCaptureDeadline - currentTimeProvider())
-                    : unlockCaptureTimeout
-            } else {
-                remainingCaptureTimeout = unlockCaptureTimeout
-            }
+            let remainingCaptureTimeout = nextUnlockCaptureTimeout(
+                initialTimeout: unlockCaptureTimeout,
+                deadline: unlockCaptureDeadline,
+                hasRequestedCapture: hasRequestedUnlockCapture,
+                acceptedMatchCount: acceptedMatchCount,
+                requiredAcceptedMatches: policy.requiredAcceptedMatches
+            )
 
             guard remainingCaptureTimeout > 0 else {
                 if frames.isEmpty {
@@ -510,6 +511,9 @@ public final class FaceRecognitionRuntimeController {
             }
 
             frames.append(observation.frame)
+            if isAcceptedUnlockFrame(observation.frame, threshold: policy.threshold) {
+                acceptedMatchCount += 1
+            }
             if bestObservation == nil || observation.bestSimilarity > bestObservation!.bestSimilarity {
                 bestObservation = observation
             }
@@ -534,6 +538,48 @@ public final class FaceRecognitionRuntimeController {
         }
 
         return rejectUnlockRecognition(policy.evaluate(frames))
+    }
+
+    private func nextUnlockCaptureTimeout(
+        initialTimeout: TimeInterval,
+        deadline: TimeInterval,
+        hasRequestedCapture: Bool,
+        acceptedMatchCount: Int,
+        requiredAcceptedMatches: Int
+    ) -> TimeInterval {
+        guard hasRequestedCapture else {
+            return initialTimeout
+        }
+
+        guard initialTimeout.isFinite else {
+            return initialTimeout
+        }
+
+        let remainingInitialSearchTimeout = max(0, deadline - currentTimeProvider())
+        if remainingInitialSearchTimeout > 0 {
+            return remainingInitialSearchTimeout
+        }
+
+        guard acceptedMatchCount > 0, acceptedMatchCount < requiredAcceptedMatches else {
+            return 0
+        }
+
+        return Self.defaultUnlockFollowUpCaptureTimeout
+    }
+
+    private func isAcceptedUnlockFrame(
+        _ frame: FaceRecognitionFrame,
+        threshold: FaceRecognitionThreshold?
+    ) -> Bool {
+        guard let threshold, case let .usable(score) = frame else {
+            return false
+        }
+
+        return score.modelVersion == threshold.modelVersion
+            && score.similarity.isFinite
+            && score.similarity >= -1
+            && score.similarity <= 1
+            && score.similarity >= threshold.minimumSimilarity
     }
 
     private func shouldStopUnlockRecognition(

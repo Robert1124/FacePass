@@ -599,6 +599,49 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         XCTAssertEqual(workflow.observeSampleBoundsXValues, [0.1])
     }
 
+    func testUnlockRecognitionAllowsShortFollowUpAfterLateFirstAcceptedMatch() async throws {
+        let modelURL = try makeModelFile()
+        let clock = ManualRecognitionClock()
+        let capture = QueueRecognitionSampleCapture(results: [
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.1), processedFrameCount: 1)),
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.2), processedFrameCount: 1))
+        ], onCaptureRequest: { requestIndex, _, _ in
+            if requestIndex == 1 {
+                clock.advance(by: 10)
+            }
+        })
+        let workflow = RecordingRecognitionWorkflow(observations: [
+            FaceRecognitionObservation(
+                bestSimilarity: 0.5,
+                modelVersion: "runtime-test-model",
+                dimension: 3,
+                comparedTemplateCount: 1,
+                frame: .usable(FaceRecognitionMatchScore(similarity: 0.5, modelVersion: "runtime-test-model"))
+            ),
+            FaceRecognitionObservation(
+                bestSimilarity: 0.55,
+                modelVersion: "runtime-test-model",
+                dimension: 3,
+                comparedTemplateCount: 1,
+                frame: .usable(FaceRecognitionMatchScore(similarity: 0.55, modelVersion: "runtime-test-model"))
+            )
+        ])
+        let controller = FaceRecognitionRuntimeController(
+            sampleCaptureService: capture,
+            workflowFactory: RecordingRecognitionWorkflowFactory(workflow: workflow),
+            userDefaults: userDefaults,
+            currentTimeProvider: { clock.now }
+        )
+        controller.setRecognitionModelPath(modelURL.path)
+
+        let result = await controller.evaluateUnlockRecognition()
+
+        XCTAssertEqual(result, .accepted)
+        XCTAssertEqual(capture.requestedTimeouts, [10, FaceRecognitionRuntimeController.defaultCaptureTimeout])
+        XCTAssertEqual(capture.requestedModes, [.recognition, .recognition])
+        XCTAssertEqual(workflow.observeSampleBoundsXValues, [0.1, 0.2])
+    }
+
     func testUnlockRecognitionAcceptsWhenOneOfMultipleCandidatesMatchesInEachRequiredFrame() async throws {
         let modelURL = try makeModelFile()
         let capture = QueueRecognitionSampleCapture(results: [
