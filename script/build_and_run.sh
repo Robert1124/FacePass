@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIGURATION="debug"
 MODE="run"
 APP_NAME="FacePass"
-APP_VERSION="${FACEPASS_APP_VERSION:-0.1.4}"
+APP_VERSION="${FACEPASS_APP_VERSION:-0.1.5}"
 BUNDLE_VERSION="${FACEPASS_BUNDLE_VERSION:-1}"
 SPARKLE_FEED_URL="https://facepass.robertw.me/updates/appcast.xml"
 APP_DIR="$ROOT_DIR/dist/$APP_NAME.app"
@@ -318,7 +318,7 @@ Modes:
   --help       Show this help text.
 
 Release environment:
-  FACEPASS_APP_VERSION              Defaults to 0.1.4.
+  FACEPASS_APP_VERSION              Defaults to 0.1.5.
   FACEPASS_BUNDLE_VERSION           Defaults to 1.
   FACEPASS_SPARKLE_PUBLIC_ED_KEY    Required for --package-dry-run; optional for local debug/verify.
 USAGE
@@ -432,7 +432,7 @@ cat > "$STAGED_APP_DIR/Contents/Info.plist" <<'PLIST'
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>0.1.4</string>
+  <string>0.1.5</string>
   <key>CFBundleVersion</key>
   <string>1</string>
   <key>LSMinimumSystemVersion</key>

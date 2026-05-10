@@ -16,7 +16,7 @@ iPhone StandBy Unlock does not send the Mac password to the iPhone. A valid iPho
 
 Camera access is short-lived.
 
-FacePass starts camera capture only for explicit enrollment/observe actions or sensitive recognition gates. Sensitive local recognition gates for lock-screen unlock and approved administrator/System Settings prompt fill wait up to 10 seconds by default for the first accepted local match. After the first accepted match, FacePass may take short immediate follow-up captures to collect the remaining required match, preserving the existing two-match gate before returning immediately. Capture stops after success, timeout, failure, or cancellation.
+FacePass starts camera capture only for explicit enrollment/observe actions or sensitive recognition gates. Sensitive local recognition gates for lock-screen unlock and approved administrator/System Settings prompt fill run for up to 10 seconds by default. Below-threshold usable face observations are retryable during that initial window and do not fail the gate early; hard failures still stop immediately. Recognition returns as soon as the required accepted matches are collected. If the first accepted match arrives late, only the existing bounded short follow-up capture path may collect the remaining required match. Capture stops after success, timeout, failure, or cancellation.
 
 Raw camera frames, photos, crops, sample buffers, and screenshots are not persisted.
 

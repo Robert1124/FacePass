@@ -442,10 +442,11 @@ public final class FaceRecognitionRuntimeController {
         let unlockCaptureDeadline = currentTimeProvider() + unlockCaptureTimeout
         var hasRequestedUnlockCapture = false
         var acceptedMatchCount = 0
-        var frames: [FaceRecognitionFrame] = []
+        var acceptedFrames: [FaceRecognitionFrame] = []
+        var sawLowScoreUsableFrame = false
         var bestObservation: FaceRecognitionObservation?
 
-        for _ in 0..<policy.maximumUsableFrames {
+        while true {
             let remainingCaptureTimeout = nextUnlockCaptureTimeout(
                 initialTimeout: unlockCaptureTimeout,
                 deadline: unlockCaptureDeadline,
@@ -455,11 +456,17 @@ public final class FaceRecognitionRuntimeController {
             )
 
             guard remainingCaptureTimeout > 0 else {
-                if frames.isEmpty {
+                if acceptedFrames.isEmpty && !sawLowScoreUsableFrame {
                     state.status = .cameraTimedOut
                     return .rejected(.timedOut)
                 }
-                return rejectUnlockRecognition(policy.evaluate(frames))
+                return rejectUnlockRecognition(
+                    finalUnlockRecognitionDecision(
+                        acceptedFrames: acceptedFrames,
+                        sawLowScoreUsableFrame: sawLowScoreUsableFrame,
+                        policy: policy
+                    )
+                )
             }
 
             let samples: [FaceEnrollmentSample]
@@ -471,17 +478,29 @@ public final class FaceRecognitionRuntimeController {
                 state.status = .cameraPermissionDenied
                 return .rejected(.cameraPermissionDenied)
             case .timedOut:
-                if frames.isEmpty {
+                if acceptedFrames.isEmpty && !sawLowScoreUsableFrame {
                     state.status = .cameraTimedOut
                     return .rejected(.timedOut)
                 }
-                return rejectUnlockRecognition(policy.evaluate(frames))
+                return rejectUnlockRecognition(
+                    finalUnlockRecognitionDecision(
+                        acceptedFrames: acceptedFrames,
+                        sawLowScoreUsableFrame: sawLowScoreUsableFrame,
+                        policy: policy
+                    )
+                )
             case .cancelled:
-                if frames.isEmpty {
+                if acceptedFrames.isEmpty && !sawLowScoreUsableFrame {
                     state.status = .cameraCancelled
                     return .rejected(.cancelled)
                 }
-                return rejectUnlockRecognition(policy.evaluate(frames))
+                return rejectUnlockRecognition(
+                    finalUnlockRecognitionDecision(
+                        acceptedFrames: acceptedFrames,
+                        sawLowScoreUsableFrame: sawLowScoreUsableFrame,
+                        policy: policy
+                    )
+                )
             case .noFace:
                 state.status = .noFaceFound
                 return .rejected(.noFace)
@@ -510,34 +529,101 @@ public final class FaceRecognitionRuntimeController {
                 return .rejected(.observeFailed)
             }
 
-            frames.append(observation.frame)
-            if isAcceptedUnlockFrame(observation.frame, threshold: policy.threshold) {
-                acceptedMatchCount += 1
-            }
             if bestObservation == nil || observation.bestSimilarity > bestObservation!.bestSimilarity {
                 bestObservation = observation
             }
 
-            switch policy.evaluate(frames) {
+            switch evaluateUnlockFrame(observation.frame, threshold: policy.threshold) {
             case .accepted:
-                let statusObservation = bestObservation ?? observation
-                state.status = .observeSucceeded(
-                    similarity: statusObservation.bestSimilarity,
-                    templateCount: statusObservation.comparedTemplateCount,
-                    modelVersion: statusObservation.modelVersion
-                )
-                return .accepted
-            case .observeOnly:
-                state.status = .observeFailed
-                return .rejected(.observeFailed)
-            case let .rejected(reason):
-                if shouldStopUnlockRecognition(for: reason, collectedFrameCount: frames.count, policy: policy) {
-                    return rejectUnlockRecognition(.rejected(reason))
+                acceptedFrames.append(observation.frame)
+                acceptedMatchCount += 1
+                if acceptedMatchCount >= policy.requiredAcceptedMatches {
+                    let decision = policy.evaluate(acceptedFrames)
+                    guard decision == .accepted else {
+                        return rejectUnlockRecognition(decision)
+                    }
+
+                    let statusObservation = bestObservation ?? observation
+                    state.status = .observeSucceeded(
+                        similarity: statusObservation.bestSimilarity,
+                        templateCount: statusObservation.comparedTemplateCount,
+                        modelVersion: statusObservation.modelVersion
+                    )
+                    return .accepted
                 }
+            case .retryableLowScore:
+                guard currentTimeProvider() < unlockCaptureDeadline else {
+                    return rejectUnlockRecognition(
+                        finalUnlockRecognitionDecision(
+                            acceptedFrames: acceptedFrames,
+                            sawLowScoreUsableFrame: true,
+                            policy: policy
+                        )
+                    )
+                }
+                sawLowScoreUsableFrame = true
+            case let .rejected(reason):
+                return rejectUnlockRecognition(.rejected(reason))
             }
         }
+    }
 
-        return rejectUnlockRecognition(policy.evaluate(frames))
+    private enum UnlockFrameEvaluation {
+        case accepted
+        case retryableLowScore
+        case rejected(FaceRecognitionRejectionReason)
+    }
+
+    private func evaluateUnlockFrame(
+        _ frame: FaceRecognitionFrame,
+        threshold: FaceRecognitionThreshold?
+    ) -> UnlockFrameEvaluation {
+        guard let threshold else {
+            return .rejected(.thresholdUnset)
+        }
+
+        guard isValidUnlockSimilarity(threshold.minimumSimilarity), !threshold.modelVersion.isEmpty else {
+            return .rejected(.invalidConfiguration)
+        }
+
+        switch frame {
+        case let .usable(score):
+            guard isValidUnlockSimilarity(score.similarity) else {
+                return .rejected(.invalidScore)
+            }
+
+            guard score.modelVersion == threshold.modelVersion else {
+                return .rejected(.staleModelVersion)
+            }
+
+            return score.similarity >= threshold.minimumSimilarity ? .accepted : .retryableLowScore
+        case .noFace:
+            return .rejected(.noFace)
+        case .multipleFaces:
+            return .rejected(.multipleFaces)
+        case .badQuality:
+            return .rejected(.badQuality)
+        case .modelError:
+            return .rejected(.modelError)
+        case .inconsistentMatchEvidence:
+            return .rejected(.inconsistentMatches)
+        }
+    }
+
+    private func finalUnlockRecognitionDecision(
+        acceptedFrames: [FaceRecognitionFrame],
+        sawLowScoreUsableFrame: Bool,
+        policy: FaceRecognitionPolicy
+    ) -> FaceRecognitionDecision {
+        let decision = policy.evaluate(acceptedFrames)
+        if decision == .rejected(.tooFewUsableFrames), sawLowScoreUsableFrame {
+            return .rejected(.fewerThanRequiredMatches)
+        }
+        return decision
+    }
+
+    private func isValidUnlockSimilarity(_ similarity: Float) -> Bool {
+        similarity.isFinite && similarity >= -1 && similarity <= 1
     }
 
     private func nextUnlockCaptureTimeout(
@@ -565,42 +651,6 @@ public final class FaceRecognitionRuntimeController {
         }
 
         return Self.defaultUnlockFollowUpCaptureTimeout
-    }
-
-    private func isAcceptedUnlockFrame(
-        _ frame: FaceRecognitionFrame,
-        threshold: FaceRecognitionThreshold?
-    ) -> Bool {
-        guard let threshold, case let .usable(score) = frame else {
-            return false
-        }
-
-        return score.modelVersion == threshold.modelVersion
-            && score.similarity.isFinite
-            && score.similarity >= -1
-            && score.similarity <= 1
-            && score.similarity >= threshold.minimumSimilarity
-    }
-
-    private func shouldStopUnlockRecognition(
-        for reason: FaceRecognitionRejectionReason,
-        collectedFrameCount: Int,
-        policy: FaceRecognitionPolicy
-    ) -> Bool {
-        switch reason {
-        case .tooFewUsableFrames, .fewerThanRequiredMatches:
-            return collectedFrameCount >= policy.maximumUsableFrames
-        case .thresholdUnset,
-             .invalidConfiguration,
-             .invalidScore,
-             .noFace,
-             .multipleFaces,
-             .badQuality,
-             .modelError,
-             .staleModelVersion,
-             .inconsistentMatches:
-            return true
-        }
     }
 
     private func rejectUnlockRecognition(

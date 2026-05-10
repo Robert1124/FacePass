@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_NAME="FacePass"
-APP_VERSION="${FACEPASS_APP_VERSION:-0.1.4}"
+APP_VERSION="${FACEPASS_APP_VERSION:-0.1.5}"
 APP_DIR="${FACEPASS_APP_DIR:-$ROOT_DIR/dist/$APP_NAME.app}"
 OUTPUT_DIR="$ROOT_DIR/dist/release"
 ALLOW_AD_HOC="false"
@@ -19,7 +19,7 @@ Options:
   --help          Show this help text.
 
 Environment:
-  FACEPASS_APP_VERSION  Defaults to 0.1.4 and controls the DMG filename.
+  FACEPASS_APP_VERSION  Defaults to 0.1.5 and controls the DMG filename.
   FACEPASS_APP_DIR      Optional path to an already staged FacePass.app bundle.
 USAGE
 }
