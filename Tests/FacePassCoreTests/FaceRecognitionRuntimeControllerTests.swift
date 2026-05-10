@@ -30,9 +30,9 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         try super.tearDownWithError()
     }
 
-    func testDefaultCaptureTimeoutKeepsSettingsRecognitionUIToTwoSecondAttempts() {
+    func testDefaultCaptureTimeoutKeepsSettingsRecognitionShortAndUnlockGateToTenSeconds() {
         XCTAssertEqual(FaceRecognitionRuntimeController.defaultCaptureTimeout, 1)
-        XCTAssertEqual(FaceRecognitionRuntimeController.defaultUnlockCaptureTimeout, 1)
+        XCTAssertEqual(FaceRecognitionRuntimeController.defaultUnlockCaptureTimeout, 10)
     }
 
     func testInitialStateSurfacesSavedTemplateFlagFromNonSensitiveProvider() {
@@ -406,7 +406,8 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         let controller = FaceRecognitionRuntimeController(
             sampleCaptureService: capture,
             workflowFactory: RecordingRecognitionWorkflowFactory(workflow: workflow),
-            userDefaults: userDefaults
+            userDefaults: userDefaults,
+            currentTimeProvider: { 0 }
         )
         controller.setRecognitionModelPath(modelURL.path)
 
@@ -444,7 +445,8 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         let controller = FaceRecognitionRuntimeController(
             sampleCaptureService: capture,
             workflowFactory: RecordingRecognitionWorkflowFactory(workflow: workflow),
-            userDefaults: userDefaults
+            userDefaults: userDefaults,
+            currentTimeProvider: { 0 }
         )
         controller.setRecognitionModelPath(modelURL.path)
 
@@ -454,6 +456,147 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
         XCTAssertEqual(capture.requestedTimeouts, [1.25, 1.25])
         XCTAssertEqual(capture.requestedModes, [.recognition, .recognition])
         XCTAssertEqual(workflow.observeSampleBoundsXValues, [0.1, 0.2])
+    }
+
+    func testDefaultUnlockRecognitionWindowAcceptsEarlyAfterRequiredMatches() async throws {
+        let modelURL = try makeModelFile()
+        let clock = ManualRecognitionClock()
+        let capture = QueueRecognitionSampleCapture(results: [
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.1), processedFrameCount: 1)),
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.2), processedFrameCount: 1)),
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.3), processedFrameCount: 1))
+        ], onCaptureRequest: { requestIndex, _, _ in
+            if requestIndex <= 2 {
+                clock.advance(by: 4)
+            }
+        })
+        let workflow = RecordingRecognitionWorkflow(observations: [
+            FaceRecognitionObservation(
+                bestSimilarity: 0.5,
+                modelVersion: "runtime-test-model",
+                dimension: 3,
+                comparedTemplateCount: 1,
+                frame: .usable(FaceRecognitionMatchScore(similarity: 0.5, modelVersion: "runtime-test-model"))
+            ),
+            FaceRecognitionObservation(
+                bestSimilarity: 0.55,
+                modelVersion: "runtime-test-model",
+                dimension: 3,
+                comparedTemplateCount: 1,
+                frame: .usable(FaceRecognitionMatchScore(similarity: 0.55, modelVersion: "runtime-test-model"))
+            ),
+            FaceRecognitionObservation(
+                bestSimilarity: 0.6,
+                modelVersion: "runtime-test-model",
+                dimension: 3,
+                comparedTemplateCount: 1,
+                frame: .usable(FaceRecognitionMatchScore(similarity: 0.6, modelVersion: "runtime-test-model"))
+            )
+        ])
+        let controller = FaceRecognitionRuntimeController(
+            sampleCaptureService: capture,
+            workflowFactory: RecordingRecognitionWorkflowFactory(workflow: workflow),
+            userDefaults: userDefaults,
+            currentTimeProvider: { clock.now }
+        )
+        controller.setRecognitionModelPath(modelURL.path)
+
+        let result = await controller.evaluateUnlockRecognition()
+
+        XCTAssertEqual(result, .accepted)
+        XCTAssertEqual(capture.requestedTimeouts, [10, 6])
+        XCTAssertEqual(capture.requestedModes, [.recognition, .recognition])
+        XCTAssertEqual(workflow.observeSampleBoundsXValues, [0.1, 0.2])
+    }
+
+    func testUnlockRecognitionBudgetsRemainingTimeAcrossAllCaptureAttempts() async throws {
+        let modelURL = try makeModelFile()
+        let clock = ManualRecognitionClock()
+        let capture = QueueRecognitionSampleCapture(results: [
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.1), processedFrameCount: 1)),
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.2), processedFrameCount: 1)),
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.3), processedFrameCount: 1))
+        ], onCaptureRequest: { requestIndex, _, _ in
+            switch requestIndex {
+            case 1:
+                clock.advance(by: 3)
+            case 2:
+                clock.advance(by: 4)
+            default:
+                break
+            }
+        })
+        let workflow = RecordingRecognitionWorkflow(observations: [
+            FaceRecognitionObservation(
+                bestSimilarity: 0.2,
+                modelVersion: "runtime-test-model",
+                dimension: 3,
+                comparedTemplateCount: 1,
+                frame: .usable(FaceRecognitionMatchScore(similarity: 0.2, modelVersion: "runtime-test-model"))
+            ),
+            FaceRecognitionObservation(
+                bestSimilarity: 0.5,
+                modelVersion: "runtime-test-model",
+                dimension: 3,
+                comparedTemplateCount: 1,
+                frame: .usable(FaceRecognitionMatchScore(similarity: 0.5, modelVersion: "runtime-test-model"))
+            ),
+            FaceRecognitionObservation(
+                bestSimilarity: 0.55,
+                modelVersion: "runtime-test-model",
+                dimension: 3,
+                comparedTemplateCount: 1,
+                frame: .usable(FaceRecognitionMatchScore(similarity: 0.55, modelVersion: "runtime-test-model"))
+            )
+        ])
+        let controller = FaceRecognitionRuntimeController(
+            sampleCaptureService: capture,
+            workflowFactory: RecordingRecognitionWorkflowFactory(workflow: workflow),
+            userDefaults: userDefaults,
+            currentTimeProvider: { clock.now }
+        )
+        controller.setRecognitionModelPath(modelURL.path)
+
+        let result = await controller.evaluateUnlockRecognition()
+
+        XCTAssertEqual(result, .accepted)
+        XCTAssertEqual(capture.requestedTimeouts, [10, 7, 3])
+        XCTAssertEqual(capture.requestedModes, [.recognition, .recognition, .recognition])
+        XCTAssertEqual(workflow.observeSampleBoundsXValues, [0.1, 0.2, 0.3])
+    }
+
+    func testUnlockRecognitionRejectsWhenTotalBudgetIsExhaustedBeforeAnotherCapture() async throws {
+        let modelURL = try makeModelFile()
+        let clock = ManualRecognitionClock()
+        let capture = QueueRecognitionSampleCapture(results: [
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.1), processedFrameCount: 1)),
+            .captured(FaceSampleCaptureSummary(sample: try makeSample(boundsX: 0.2), processedFrameCount: 1))
+        ], onCaptureRequest: { requestIndex, _, _ in
+            if requestIndex == 1 {
+                clock.advance(by: 10)
+            }
+        })
+        let workflow = RecordingRecognitionWorkflow(observation: FaceRecognitionObservation(
+            bestSimilarity: 0.2,
+            modelVersion: "runtime-test-model",
+            dimension: 3,
+            comparedTemplateCount: 1,
+            frame: .usable(FaceRecognitionMatchScore(similarity: 0.2, modelVersion: "runtime-test-model"))
+        ))
+        let controller = FaceRecognitionRuntimeController(
+            sampleCaptureService: capture,
+            workflowFactory: RecordingRecognitionWorkflowFactory(workflow: workflow),
+            userDefaults: userDefaults,
+            currentTimeProvider: { clock.now }
+        )
+        controller.setRecognitionModelPath(modelURL.path)
+
+        let result = await controller.evaluateUnlockRecognition()
+
+        XCTAssertEqual(result, .rejected(.rejected))
+        XCTAssertEqual(capture.requestedTimeouts, [10])
+        XCTAssertEqual(capture.requestedModes, [.recognition])
+        XCTAssertEqual(workflow.observeSampleBoundsXValues, [0.1])
     }
 
     func testUnlockRecognitionAcceptsWhenOneOfMultipleCandidatesMatchesInEachRequiredFrame() async throws {
@@ -766,11 +909,16 @@ final class FaceRecognitionRuntimeControllerTests: XCTestCase {
 
 private final class QueueRecognitionSampleCapture: FaceRecognitionModeSampleCapturing {
     private var results: [FaceSampleCaptureResult]
+    private let onCaptureRequest: ((Int, TimeInterval, FaceSampleCaptureMode) -> Void)?
     private(set) var requestedTimeouts: [TimeInterval] = []
     private(set) var requestedModes: [FaceSampleCaptureMode] = []
 
-    init(results: [FaceSampleCaptureResult] = []) {
+    init(
+        results: [FaceSampleCaptureResult] = [],
+        onCaptureRequest: ((Int, TimeInterval, FaceSampleCaptureMode) -> Void)? = nil
+    ) {
         self.results = results
+        self.onCaptureRequest = onCaptureRequest
     }
 
     func captureSample(timeout: TimeInterval) async -> FaceSampleCaptureResult {
@@ -780,11 +928,24 @@ private final class QueueRecognitionSampleCapture: FaceRecognitionModeSampleCapt
     func captureSample(timeout: TimeInterval, mode: FaceSampleCaptureMode) async -> FaceSampleCaptureResult {
         requestedTimeouts.append(timeout)
         requestedModes.append(mode)
+        onCaptureRequest?(requestedTimeouts.count, timeout, mode)
         guard !results.isEmpty else {
             return .timedOut
         }
 
         return results.removeFirst()
+    }
+}
+
+private final class ManualRecognitionClock {
+    private(set) var now: TimeInterval
+
+    init(now: TimeInterval = 0) {
+        self.now = now
+    }
+
+    func advance(by duration: TimeInterval) {
+        now += duration
     }
 }
 

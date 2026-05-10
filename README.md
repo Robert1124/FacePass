@@ -58,6 +58,7 @@ See the [official privacy page](https://facepass.robertw.me/privacy.html) for th
 - Passwords are stored only in macOS Keychain.
 - FacePass does not store raw camera frames, photos, or screenshots.
 - Camera sessions are short-lived and start only when needed.
+- Sensitive local recognition gates for lock-screen assist and approved administrator/System Settings prompt fill run for up to 10 seconds and return as soon as recognition succeeds. Camera capture still stops after success, timeout, cancellation, or failure.
 - Face recognition templates are local encrypted template data, not raw images.
 - FacePass does not upload passwords, face data, raw camera frames, unlock state, Wi-Fi details, display identifiers, or environment signals.
 - FacePass has no analytics, telemetry, cloud sync, backend account service, external unlock server, APNs unlock path, WebSocket transport, or paid network service.

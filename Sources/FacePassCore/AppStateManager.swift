@@ -88,7 +88,7 @@ public final class AppStateManager: ObservableObject {
         facePresenceDetector: any FacePresenceDetecting = CameraFaceDetector(),
         cameraPermissionProvider: any CameraFaceDetectionPermissionProviding = SystemCameraFaceDetectionPermissionProvider(),
         facePresenceCheckTimeout: TimeInterval = 3,
-        automaticLockScreenFaceCheckTimeout: TimeInterval = 1,
+        automaticLockScreenFaceCheckTimeout: TimeInterval = FaceRecognitionRuntimeController.defaultUnlockCaptureTimeout,
         lockScreenStateProvider: LockScreenStateProviding = SystemLockScreenStateProvider(),
         lockScreenPasswordTyper: LockScreenPasswordTyping = SystemLockScreenPasswordTyper(),
         recognitionRuntimeController: FaceRecognitionRuntimeController = FaceRecognitionRuntimeController(),

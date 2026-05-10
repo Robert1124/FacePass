@@ -115,7 +115,8 @@ If you redistribute model artifacts or binaries that include them, review the up
 - Enrollment stores encrypted local template data, not raw photos.
 - Observe, lock-screen, and authorization-prompt recognition can evaluate multiple visible face candidates against the single stored template.
 - Enrollment capture still expects one valid face per capture.
-- Recognition runs in short camera windows and stops after success, failure, timeout, or cancellation.
+- Sensitive lock-screen and approved administrator/System Settings prompt recognition gates run for up to 10 seconds by default and return as soon as recognition succeeds within that window.
+- Recognition camera capture stops after success, failure, timeout, or cancellation.
 
 ## Current Limitations
 

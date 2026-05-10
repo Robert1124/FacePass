@@ -376,7 +376,7 @@ final class AppStateManagerTests: XCTestCase {
 
         XCTAssertEqual(manager.lastAutomaticLockScreenUnlockResult, .accessibilityPermissionDenied)
         XCTAssertEqual(manager.lastAutomaticLockScreenAttemptStatus, .unlockResult(.accessibilityPermissionDenied))
-        XCTAssertEqual(capture.requestedTimeouts.count, 2)
+        XCTAssertEqual(capture.requestedTimeouts, [10, 10])
         XCTAssertFalse(vault.events.contains(.readPassword(account: defaultPasswordAccountIdentifier)))
         XCTAssertTrue(typer.events.isEmpty)
         XCTAssertEqual(overlay.recordedEvents(), [.scanning, .failure])
@@ -1120,7 +1120,7 @@ final class AppStateManagerTests: XCTestCase {
             vault.events.filter { $0 == .readPassword(account: defaultPasswordAccountIdentifier) }.count,
             1
         )
-        XCTAssertEqual(capture.requestedTimeouts.count, 2)
+        XCTAssertEqual(capture.requestedTimeouts, [10, 10])
         XCTAssertEqual(autofill.fillEvents, [
             .checkedAuthorizationPrompt,
             .checkedAuthorizationPrompt,
@@ -1134,7 +1134,7 @@ final class AppStateManagerTests: XCTestCase {
             vault.events.filter { $0 == .readPassword(account: defaultPasswordAccountIdentifier) }.count,
             1
         )
-        XCTAssertEqual(capture.requestedTimeouts.count, 2)
+        XCTAssertEqual(capture.requestedTimeouts, [10, 10])
 
         autofill.setFocusedStatus(.noFocusedPasswordField)
         await manager.handleAuthorizationPromptMonitorTick()
@@ -1148,7 +1148,7 @@ final class AppStateManagerTests: XCTestCase {
             vault.events.filter { $0 == .readPassword(account: defaultPasswordAccountIdentifier) }.count,
             2
         )
-        XCTAssertEqual(capture.requestedTimeouts.count, 4)
+        XCTAssertEqual(capture.requestedTimeouts, [10, 10, 10, 10])
     }
 
     func testAutomaticAuthorizationPromptTickSkipsLockedSessionWithoutPromptCheck() async throws {
@@ -2531,7 +2531,8 @@ final class AppStateManagerTests: XCTestCase {
                     observeError: observeError
                 )
             ),
-            userDefaults: userDefaults
+            userDefaults: userDefaults,
+            currentTimeProvider: { 0 }
         )
         if configureModelPath {
             controller.setRecognitionModelPath(modelURL.path)

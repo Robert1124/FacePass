@@ -86,7 +86,7 @@ public final class FaceRecognitionRuntimeController {
     public static let modelPathDefaultsKey = "FacePass.recognitionPrototype.modelPath"
     public static let unlockMinimumSimilarityDefaultsKey = "FacePass.recognitionPrototype.unlockMinimumSimilarity"
     public static let defaultCaptureTimeout: TimeInterval = 1
-    public static let defaultUnlockCaptureTimeout: TimeInterval = 1
+    public static let defaultUnlockCaptureTimeout: TimeInterval = 10
     public static let defaultUnlockMinimumSimilarity: Float = 0.35
     public static let minimumAllowedUnlockSimilarity: Float = 0.20
     public static let maximumAllowedUnlockSimilarity: Float = 0.75
@@ -106,6 +106,7 @@ public final class FaceRecognitionRuntimeController {
     private let fileManager: FileManager
     private let savedTemplateStateProvider: () -> Bool
     private let captureTimeout: TimeInterval
+    private let currentTimeProvider: () -> TimeInterval
     private let minimumEnrollmentSampleCount: Int
     private let maximumEnrollmentSampleCount: Int
     // In-process hook for tests and local development only. Normal app runtime uses the bundled model.
@@ -126,7 +127,8 @@ public final class FaceRecognitionRuntimeController {
         developmentModelURLOverride: URL? = nil,
         captureTimeout: TimeInterval = FaceRecognitionRuntimeController.defaultCaptureTimeout,
         minimumEnrollmentSampleCount: Int = FaceEnrollmentService<CoreMLFaceEmbeddingProvider>.defaultMinimumSampleCount,
-        maximumEnrollmentSampleCount: Int = FaceRecognitionRuntimeController.defaultMaximumEnrollmentSampleCount
+        maximumEnrollmentSampleCount: Int = FaceRecognitionRuntimeController.defaultMaximumEnrollmentSampleCount,
+        currentTimeProvider: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }
     ) {
         self.sampleCaptureService = sampleCaptureService
         self.workflowFactory = workflowFactory
@@ -143,6 +145,7 @@ public final class FaceRecognitionRuntimeController {
         }
         self.savedTemplateStateProvider = resolvedSavedTemplateStateProvider
         self.captureTimeout = max(0, captureTimeout)
+        self.currentTimeProvider = currentTimeProvider
         self.minimumEnrollmentSampleCount = max(1, minimumEnrollmentSampleCount)
         self.maximumEnrollmentSampleCount = max(self.minimumEnrollmentSampleCount, maximumEnrollmentSampleCount)
         self.developmentModelURLOverride = developmentModelURLOverride
@@ -435,12 +438,32 @@ public final class FaceRecognitionRuntimeController {
             maximumUsableFrames: Self.defaultUnlockMaximumUsableFrames
         )
         let unlockCaptureTimeout = max(0, timeout)
+        let unlockCaptureDeadline = currentTimeProvider() + unlockCaptureTimeout
+        var hasRequestedUnlockCapture = false
         var frames: [FaceRecognitionFrame] = []
         var bestObservation: FaceRecognitionObservation?
 
         for _ in 0..<policy.maximumUsableFrames {
+            let remainingCaptureTimeout: TimeInterval
+            if hasRequestedUnlockCapture {
+                remainingCaptureTimeout = unlockCaptureTimeout.isFinite
+                    ? max(0, unlockCaptureDeadline - currentTimeProvider())
+                    : unlockCaptureTimeout
+            } else {
+                remainingCaptureTimeout = unlockCaptureTimeout
+            }
+
+            guard remainingCaptureTimeout > 0 else {
+                if frames.isEmpty {
+                    state.status = .cameraTimedOut
+                    return .rejected(.timedOut)
+                }
+                return rejectUnlockRecognition(policy.evaluate(frames))
+            }
+
             let samples: [FaceEnrollmentSample]
-            switch await sampleCaptureService.captureSample(timeout: unlockCaptureTimeout, mode: .recognition) {
+            hasRequestedUnlockCapture = true
+            switch await sampleCaptureService.captureSample(timeout: remainingCaptureTimeout, mode: .recognition) {
             case let .captured(summary):
                 samples = summary.samples
             case .permissionDenied:
