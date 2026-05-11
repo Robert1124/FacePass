@@ -8,6 +8,8 @@ It is inspired by the idea of BLEUnlock, but it does not use BLEUnlock code. Fac
 
 [Official Website](https://facepass.robertw.me)
 
+[Sponsor FacePass](https://github.com/sponsors/Robert1124)
+
 [Join the iPhone Companion TestFlight](https://testflight.apple.com/join/p3zBMEBY)
 
 [中文说明](README.zh-CN.md)

@@ -8,6 +8,8 @@ FacePass 是一个原生 macOS 菜单栏辅助工具，用于在你自己的 Mac
 
 [官方网站](https://facepass.robertw.me)
 
+[赞助 FacePass](https://github.com/sponsors/Robert1124)
+
 [加入 iPhone Companion TestFlight](https://testflight.apple.com/join/p3zBMEBY)
 
 [English README](README.md)
