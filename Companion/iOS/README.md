@@ -171,7 +171,7 @@ Real-device manual verification is still required for:
 
 ## Distribution
 
-The public distribution path for the iOS companion should be App Store release, with TestFlight for beta testing. Ad Hoc builds, Apple Development signing, direct device installs from Xcode, Apple Developer Enterprise Program distribution, and sideloading are not appropriate public distribution channels for this companion. Keep those alternatives limited to development, registered-device testing, or organization-internal cases where Apple's rules allow them.
+The public distribution path for the iOS companion is the App Store: [FacePass Companion](https://apps.apple.com/app/facepass-companion/id6766098166). TestFlight is only a beta-testing channel for pre-release builds, not the main public download path. Ad Hoc builds, Apple Development signing, direct device installs from Xcode, Apple Developer Enterprise Program distribution, and sideloading are not appropriate public distribution channels for this companion. Keep those alternatives limited to development, registered-device testing, or organization-internal cases where Apple's rules allow them.
 
 The app and widget Info.plist files set `ITSAppUsesNonExemptEncryption` to `NO`. This records that the companion uses no non-exempt encryption for App Store Connect export-compliance purposes, so new uploads should not require the recurring encryption questionnaire. If future work adds non-exempt cryptography or external encrypted transport beyond the current local signed-request, Keychain, and system-networking boundaries, revisit this value before upload.
 

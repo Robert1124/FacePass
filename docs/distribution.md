@@ -48,7 +48,7 @@ Unsigned, ad-hoc-signed, or non-notarized apps may be blocked or warned by Gatek
 
 ## Public Direct Download
 
-The public macOS distribution path for FacePass is a Developer ID-signed and notarized DMG with Sparkle 2 update checks. FacePass is a menu-bar helper that relies on local macOS permissions and local-only helper behavior, so public macOS releases should be shipped as Developer ID/notarized Mac downloads rather than through the iOS companion's App Store/TestFlight path.
+The public macOS distribution path for FacePass is a Developer ID-signed and notarized DMG with Sparkle 2 update checks. FacePass is a menu-bar helper that relies on local macOS permissions and local-only helper behavior, so public macOS releases should be shipped as Developer ID/notarized Mac downloads rather than through the iOS companion's App Store path or TestFlight beta-testing channel.
 
 Sparkle is only an appcast and package-download channel. The configured update feed is:
 
@@ -109,7 +109,7 @@ Do not commit signing certificates, private keys, notarization credentials, app-
 
 ## iOS Companion Distribution
 
-The iOS companion's public distribution path should be the App Store, with TestFlight used for public or invited beta testing before release. The companion must preserve the current product boundary: local signed requests only, no Mac password transfer to the iPhone, no face data transfer, no cloud service, no APNs, no telemetry, and no claim that FacePass replaces Face ID, Touch ID, or macOS authentication.
+The iOS companion's public distribution path is the App Store: [FacePass Companion](https://apps.apple.com/app/facepass-companion/id6766098166). TestFlight is only a public or invited beta-testing channel for pre-release builds, not the main public download path. The companion must preserve the current product boundary: local signed requests only, no Mac password transfer to the iPhone, no face data transfer, no cloud service, no APNs, no telemetry, and no claim that FacePass replaces Face ID, Touch ID, or macOS authentication.
 
 Ad Hoc builds, local Apple Development signing, direct device installs from Xcode, Apple Developer Enterprise Program distribution, and sideloading are not appropriate public distribution channels for the FacePass iOS companion. They may be useful only for local development, limited registered-device testing, or organization-internal deployment where Apple's rules allow them; they should not be documented as the public release plan.
 
